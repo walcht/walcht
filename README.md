@@ -14,7 +14,7 @@ I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
 ## I'm currently learning :
   - computer science basics (these are overwhelming)
   - mastering C++ through numerous projects
-  - mastering Unity3d
+  - mastering Unity 3D
   - 3d modelling using Blender
   - advanced 2d graphics using SDL2.0
   - git
