@@ -1,4 +1,4 @@
-### About me (and other boring stuff) :rooster:
+## About me (and other boring stuff) :rooster:
 
 My name is Walid Chtioui. I'm extremely interested in computer graphics, game development and A.I.
 I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
@@ -20,5 +20,5 @@ Anything related to computer science is interesting for me.
   - advanced 2d graphics using SDL2.0
   - git
  
- ## If for some reason reason you want to reach me, here is the best way to do so:
+ #### If for some reason reason you want to reach me, here is the best way to do so:
   walid.chtioui.main@gmail.com
