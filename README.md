@@ -2,6 +2,7 @@
 
 My name is Walid Chtioui. I'm extremely interested in computer graphics, game development and A.I.
 I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
+Anything related to computer science is interesting for me.
 
 ## I'm currently working on :
   - a somewhat interesting game using Unity 3D.
