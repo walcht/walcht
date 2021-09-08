@@ -1,13 +1,15 @@
 ### About me (and other boring stuff) :rooster:
 
-## My name is Walid Chtioui. I'm extremely interested in computer graphics, game development and A.I.
+My name is Walid Chtioui. I'm extremely interested in computer graphics, game development and A.I.
+I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
+
 ## I'm currently working on :
   - a somewhat interesting game using Unity 3D.
   - an easy-to-use and implement charts library for wxWidgets
   - a simple, yet powerfull 2d/2.5d game engine
   - some well-documented and easy-to-implement Arduino projects.
 
-I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
+
 
 ## I'm currently learning :
   - computer science basics (these are overwhelming)
