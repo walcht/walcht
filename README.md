@@ -1,4 +1,4 @@
-### About me (and other boring stuff) 👋
+### About me (and other boring stuff) :rooster:
 
 <!--
 **walcht/walcht** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
