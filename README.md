@@ -1,12 +1,12 @@
 ## About me:
 
-My name is Walid Chtioui. I'm extremely interested in computer graphics(real time rendering engines, realtime lighting, etc...), A.I. and game development.
+My name is Walid Chtioui. I'm extremely interested in computer graphics(real time rendering engines, real time lighting, etc...), A.I. and game development.
 I do some GUI development using wxWidgets library.
 
 ## Projects I worked on:
   - Simple C dictionary program
   - a multiplatform benchmarking GUI
-  - a 2D game using SDL 2.0
+  - a 2D maze game using SDL 2.0
 
 ## I'm currently working on :
   - a somewhat interesting 3D game using Unity 3D
