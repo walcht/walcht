@@ -1,24 +1,29 @@
-## About me (and other boring stuff) :rooster:
+## About me:
 
-My name is Walid Chtioui. I'm extremely interested in computer graphics, game development and A.I.
-I do sometimes some GUI(wxWidgets)\Robotics(Arduino and Raspberry PI).
-Anything related to computer science is interesting for me.
+My name is Walid Chtioui. I'm extremely interested in computer graphics(real time rendering engines, realtime lighting, etc...), A.I. and game development.
+I do some GUI development using wxWidgets library.
+
+## Projects I worked on:
+  - Simple C dictionary program
+  - a multiplatform benchmarking GUI
+  - a 2D game using SDL 2.0
 
 ## I'm currently working on :
-  - a somewhat interesting game using Unity 3D.
-  - an easy-to-use and implement charts library for wxWidgets
+  - a somewhat interesting 3D game using Unity 3D
+  - a 3D virtual environement that runs on browsers using webGl
+  - an easy-to-use-and-implement charts library for wxWidgets
+  - well-documented Raycaster engine using C++ (educational purpsoe)
   - a simple, yet powerfull 2d/2.5d game engine
-  - some well-documented and easy-to-implement Arduino projects.
-
-
+  - some well-documented and easy-to-implement Arduino\ESP32 projects (educational purpose)
 
 ## I'm currently learning :
-  - computer science basics (these are overwhelming)
+  - computer science basics
+  - A.I. basics
   - mastering C++ through numerous projects
   - mastering Unity 3D
   - 3d modelling using Blender
   - advanced 2d graphics using SDL2.0
   - git
  
- #### If for some reason reason you want to reach me, here is the best way to do so:
+ #### If you want to reach me, here is the best way to do so:
   walid.chtioui.main@gmail.com
