@@ -72,6 +72,18 @@ input, select, textarea {
 	appearance: none;
 }
 
+.resume {
+		border: 0;
+		border-radius: 0;
+		cursor: pointer;
+		font-family: "Source Sans Pro", Helvetica, sans-serif;
+		font-weight: 900;
+		letter-spacing: 0.075em;
+		text-align: center;
+		text-decoration: none;
+		text-transform: uppercase;
+}
+
 /* Basic */
 
 	@-ms-viewport {
@@ -3873,7 +3885,8 @@ input, select, textarea {
 				border-left-width: 2px;
 				border-style: solid;
 				border-top-width: 2px;
-				text-align: center;
+				text-align: left;
+				line-height: 2;
 			}
 
 				#main > .posts > article > :last-child {
