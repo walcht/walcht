@@ -3413,7 +3413,7 @@ input, select, textarea {
 			margin-top: -0.25rem;
 			text-align: justify;
 			width: calc(100% - 4rem);
-			max-width: 72rem;
+			max-width: 82rem;
 		}
 
 		#intro + #header {
@@ -3642,7 +3642,7 @@ input, select, textarea {
 		padding: 0 2rem 0 0;
 		position: relative;
 		width: calc(100% - 4rem);
-		max-width: 72rem;
+		max-width: 82rem;
 		z-index: 2;
 	}
 
@@ -3779,7 +3779,7 @@ input, select, textarea {
 		position: relative;
 		margin: 0 auto;
 		width: calc(100% - 4rem);
-		max-width: 72rem;
+		max-width: 82rem;
 		z-index: 2;
 	}
 
@@ -3979,7 +3979,7 @@ input, select, textarea {
 		position: relative;
 		margin: 0 auto;
 		width: calc(100% - 4rem);
-		max-width: 72rem;
+		max-width: 82rem;
 		z-index: 2;
 	}
 
@@ -4401,11 +4401,12 @@ input, select, textarea {
 			}
 
 		}
+		
 
 	#copyright {
 		color: #ffffff;
 		position: relative;
-		color: rgba(255, 255, 255, 0.25);
+		color: rgba(255, 255, 255, 0.638);
 		cursor: default;
 		font-family: "Source Sans Pro", Helvetica, sans-serif;
 		font-size: 0.8rem;
@@ -4416,7 +4417,7 @@ input, select, textarea {
 		text-transform: uppercase;
 		margin: 4rem auto 8rem auto;
 		width: calc(100% - 4rem);
-		max-width: 72rem;
+		max-width: 82rem;
 		z-index: 2;
 	}
 
