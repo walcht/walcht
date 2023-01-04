@@ -34,7 +34,7 @@
 					<nav id="nav">
 						<ul class="links">
 							<li class="active"><a href="index.html">Software Development</a></li>
-							<li><a href="elements.html">3D Modeling</a></li>
+							<!-- <li><a href="elements.html">3D Modeling</a></li> -->
 						</ul>
 						<ul class="icons">
 							<li><a href="https://www.linkedin.com/in/walid-chtioui/" class="icon brands fa-linkedin"><span class="label"></span></a></li>
@@ -57,37 +57,37 @@
 										This is a freelance software development project done by a team of 2 people: fullstack web developer and game developer (me).
 									</p>
 								</header>
-								<a href="images/pic01.jpg" class="image main"><img src="images/pic01.jpg" alt="" /></a>
+								
+								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/y7W9pecGJZw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/5DGKh6OSwGc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/baJL_BKXEpw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/YdyFbcnIFKs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 								<div class="box alt">
 									<div class="row gtr-50 gtr-uniform">
-										<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></div>
+										<div class="col-4"><a href="images/entrance_preview.PNG" class="image fit"><img src="images/entrance_preview.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/exhibition_preview.PNG" class="image fit"><img src="images/exhibition_preview.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/main_exhibition.PNG" class="image fit"><img src="images/main_exhibition.PNG" alt="" /></a></div>
 										<!-- Break -->
-										<div class="col-4"><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
+										<div class="col-4"><a href="images/exhibition_info_desk_UI.PNG" class="image fit"><img src="images/exhibition_info_desk_UI.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/exhibition_stand_UI.PNG" class="image fit"><img src="images/exhibition_stand_UI.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/exhibition_UI_networking.PNG" class="image fit"><img src="images/exhibition_UI_networking.PNG" alt="" /></a></div>
 										<!-- Break -->
-										<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
+										<div class="col-4"><a href="images/exhibition_UI_Tutorial.PNG" class="image fit"><img src="images/exhibition_UI_Tutorial.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/exhibition_main_menu_UI.PNG" class="image fit"><img src="images/exhibition_main_menu_UI.PNG" alt="" /></a></div>
+										<div class="col-4"><a href="images/XLStand_banner03.png" class="image fit"><img src="images/XLStand_banner03.png" alt="" /></a></div>
 										<!-- Break -->
-										<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></div>
-										<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
+										<div class="col-4"><a href="images/LLStand_banner02.png" class="image fit"><img src="images/LLStand_banner02.png" alt="" /></a></div>
+										<div class="col-4"><a href="images/MStand_banner00.png" class="image fit"><img src="images/MStand_banner00.png" alt="" /></a></div>
+										
 									</div>
 								</div>
-
-								<video>
-									<source src="https://drive.google.com/file/d/1HPfnZGc0R6Rz4jPa22VG_f7_SFI4o3BR/view?usp=sharing" type='video/mkv'>
-								</video>
 
 								<p>
 									Since I wanted to learn as much as possible from this project, only two assets from the Unity Store were used (for 3D Characters and sounds),
 									everything else was built\done from scratch; Character Movement, AI System, 3D Models, Camera Collision Avoidance, Lighting, Animations, etc...<br />
 									Since the target platform for this project is WebGl, we were confronted with numerous challenges,
-									many of which we have managed to solve. Below are a list of the most difficult challenges I've faced.
+									many of which were solved. Below are a list of the most difficult challenges we've faced.
 									<br />
 									<br />
 								</p>
@@ -104,14 +104,14 @@
 
 								<h3>Solutions</h3>
 								<ol>
-									<li>Reduced the number of materials by sharing materials across numerous 3D models. Heavy use of static batching to reduce state changes.</li>
-									<li>ScriptableObjects as intermediate layers; a ScriptableObject was used as an intermediate layer between the Input Manager and the objects
+									<li>Reduced the number of materials by sharing materials across numerous 3D models. Heavy use of <b>static batching</b> to reduce state changes.</li>
+									<li><b>ScriptableObjects as intermediate layers</b>. For instance, a ScriptableObject was used as an intermediate layer between the Input Manager and the objects
 										that required input. Another ScriptableObject was also used as a Scene Management intermediate layer.
-										I've also relied heavily on using Manager Singletons. For instance, we had a UIManager, CustomizationManager, TextureRequestManager, etc...
+										I've also relied heavily on using Manager Singletons. For instance, we had a <b>UIManager</b>, <b>CustomizationManager</b>, <b>TextureRequestManager</b>, etc...
 										All of these were put into a seperate, persistent Scene that holds all persistent GameObjects. This has greatly improved the structure of the project.
 									</li>
 									<li>
-										Use environment to properly set up Occlusion Culling to completely cull NPC characters and set a maximum distance after which any character won't be rendered.
+										Use environment to properly set up <b>Occlusion Culling</b> to completely cull NPC characters and set a maximum distance after which they won't be rendered.
 									</li>
 									<li>
 										I built a TextureRequestManager that receives texture requests and executes them when possible. Since, for each scene, we have hundreds of texture
@@ -121,23 +121,31 @@
 										Manually merge models that share the same material together, I did this for all the roof 3D models.
 									</li>
 									<li>
-										Lightmapping resulted in better visuals with much better performance. Using light probes runtime-instantiated objects resulted
-										in good visuals as well.
+										Lightmapping resulted in better visuals with much better performance. Thanks to proper setup of light probes, runtime-instantiated objects
+										had acceptable visual quality.
 									</li>
 								</ol>
 
 								<h3>We've learned that</h3>
 								<ul>
-									<li>Modern principles of software development are extremely important. Not following these results in an unmaintainable project.</li>
+									<li>Modern principles of software development are <b>extremely important</b>. Not following these results in an unmaintainable project.</li>
 									<li>Singletons come with alot of disadvantages in Unity development environment.
 										Using ScriptableObjects when possible proved to be a much better design choice.</li>
-									<li>We should optimize for the target platform. WebGl is single-threaded, most performance issues are related to CPU-bottleneck.
+									<li><b>We should optimize for the target platform</b>. WebGl is single-threaded, most performance issues are caused by CPU-bottleneck.
 										For example, reducing vertex-count of 3D objects won't help that much.</li>
-									<li>Using a CI\CD pipeline could've saved us alot of time. Countless times we had to rebuild the whole project because
+									<li>Using a <b>CI\CD pipeline</b> could've saved us alot of time. Many times we had to rebuild the whole project because
 										of an error that could had been easily detected.</li>
-									<li>Using the Unity Profiler in the development build helped us identifying performance issues.</li>
-									<li>SCRUM </li>
+									<li>Using the <b>Unity Profiler</b> in the development build helped us identifying performance issues.</li>
 								</ul>
+								
+								<p>
+									For project management, we followed the <b>SCRUM agile development methodology</b> where a sprint lasted four weeks.
+									At the end of each sprint the customer reviewed the outcome and gave us feedback. We have heavily relied on using trello
+									to organize our sprints.
+								</p>
+
+								<div><a href="images/virtual_exhibition_trello.jpeg" class="image fit"><img src="images/virtual_exhibition_trello.jpeg" alt="" /></a></div>
+
 							</article>
 
 						<!-- Posts -->
