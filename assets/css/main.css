@@ -84,6 +84,13 @@ input, select, textarea {
 		text-transform: uppercase;
 }
 
+.center {
+	display: block;
+ 	margin-left: auto;
+  	margin-right: auto;
+ 	width: 40%;
+}
+
 /* Basic */
 
 	@-ms-viewport {

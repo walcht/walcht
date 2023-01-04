@@ -20,7 +20,7 @@
 				<!-- Intro -->
 					<div id="intro">
 						<h1>Walid Chtioui</h1>
-						<h2>Game Developer</h2>
+						<h2>Game Programmer</h2>
 						<p>Hello! My name is Walid, I'm currenty pursuing a double MSc degree in Computer Science at the University of Passau.<br />
 							
 							My focus areas are Game Development using the Unity game engine and Artificial Intelligence, mainly Deep Learning.<br />
@@ -39,7 +39,7 @@
 						<ul class="icons">
 							<li><a href="https://www.linkedin.com/in/walid-chtioui/" class="icon brands fa-linkedin"><span class="label"></span></a></li>
 							<li><a href="https://github.com/walcht" class="icon brands fa-github"><span class="label"></span></a></li>
-							<li><a href="/pdfs/public_cv_walid_chtioui.pdf" class="resume">RESUME</a></li>
+							<li><a href="/pdfs/walid_chtioui_public_resume.pdf" class="resume">RESUME</a></li>
 						</ul>
 					</nav>
 
@@ -50,6 +50,7 @@
 							<article class="post featured">
 								<header class="major">
 									<h2>Virtual Exhibition</h2>
+									<h3>Freelance @ <i>SCALE</i></h3>
 									<p class="technologies"><b>TECHNOLOGIES</b>: Unity3D, C#, Git LFS, Blender, GIMP, JavaScript</p>
 									<p class="target platform"><b>TARGET PLATFORM(s)</b>: WebGL</p>
 									<p>
@@ -62,6 +63,12 @@
 								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/5DGKh6OSwGc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/baJL_BKXEpw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/YdyFbcnIFKs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								
+								<p>
+									Since I wanted to learn as much as possible from this project, only two assets from the Unity Assets Store were used (for 3D Characters and sounds),
+									everything else was built\done from <i>scratch</i>; Character Movement, AI System, 3D Models, Camera Collision Avoidance, Lighting, Animations, etc...<br />
+									<br />
+								</p>
 
 								<div class="box alt">
 									<div class="row gtr-50 gtr-uniform">
@@ -83,15 +90,6 @@
 									</div>
 								</div>
 
-								<p>
-									Since I wanted to learn as much as possible from this project, only two assets from the Unity Store were used (for 3D Characters and sounds),
-									everything else was built\done from scratch; Character Movement, AI System, 3D Models, Camera Collision Avoidance, Lighting, Animations, etc...<br />
-									Since the target platform for this project is WebGl, we were confronted with numerous challenges,
-									many of which were solved. Below are a list of the most difficult challenges we've faced.
-									<br />
-									<br />
-								</p>
-
 								<h3>Challenges</h3>
 								<ol>
 									<li>WebGl is single-threaded. CPU optimization is extremely important</li>
@@ -104,49 +102,78 @@
 
 								<h3>Solutions</h3>
 								<ol>
-									<li>Reduced the number of materials by sharing materials across numerous 3D models. Heavy use of <b>static batching</b> to reduce state changes.</li>
+									<li><b>Reduced the number of materials by sharing materials across numerous 3D models</b>. Heavy use of <b>static batching</b> to reduce state changes.</li>
 									<li><b>ScriptableObjects as intermediate layers</b>. For instance, a ScriptableObject was used as an intermediate layer between the Input Manager and the objects
 										that required input. Another ScriptableObject was also used as a Scene Management intermediate layer.
 										I've also relied heavily on using Manager Singletons. For instance, we had a <b>UIManager</b>, <b>CustomizationManager</b>, <b>TextureRequestManager</b>, etc...
 										All of these were put into a seperate, persistent Scene that holds all persistent GameObjects. This has greatly improved the structure of the project.
 									</li>
 									<li>
-										Use environment to properly set up <b>Occlusion Culling</b> to completely cull NPC characters and set a maximum distance after which they won't be rendered.
+										<b>Use environment to properly set up Occlusion Culling</b> to completely cull NPC characters and set a maximum distance after which they won't be rendered.
 									</li>
 									<li>
-										I built a TextureRequestManager that receives texture requests and executes them when possible. Since, for each scene, we have hundreds of texture
+										<b>Built a TextureRequestManager</b> that receives texture requests and executes them when possible. Since, for each scene, we have hundreds of texture
 										requests, this manager solved alot of issues by limiting how many texture requests can be served at a time.
 									</li>
 									<li>
-										Manually merge models that share the same material together, I did this for all the roof 3D models.
+										<b>Manually merge models that share the same material together</b>, this was done for all the roof's 3D models.
 									</li>
 									<li>
-										Lightmapping resulted in better visuals with much better performance. Thanks to proper setup of light probes, runtime-instantiated objects
+										<b>Lightmapping resulted in better visuals with much better performance</b>. Thanks to proper setup of light probes, runtime-instantiated objects
 										had acceptable visual quality.
 									</li>
 								</ol>
 
 								<h3>We've learned that</h3>
 								<ul>
-									<li>Modern principles of software development are <b>extremely important</b>. Not following these results in an unmaintainable project.</li>
-									<li>Singletons come with alot of disadvantages in Unity development environment.
+									<li><b>Modern principles of software development are extremely important</b>. Not following these results in an unmaintainable project.</li>
+									<li><b>Singletons come with alot of disadvantages in Unity development environment</b>.
 										Using ScriptableObjects when possible proved to be a much better design choice.</li>
 									<li><b>We should optimize for the target platform</b>. WebGl is single-threaded, most performance issues are caused by CPU-bottleneck.
 										For example, reducing vertex-count of 3D objects won't help that much.</li>
-									<li>Using a <b>CI\CD pipeline</b> could've saved us alot of time. Many times we had to rebuild the whole project because
+									<li><b>Using a CI\CD pipeline could've saved us alot of time</b>. Many times we had to rebuild the whole project because
 										of an error that could had been easily detected.</li>
-									<li>Using the <b>Unity Profiler</b> in the development build helped us identifying performance issues.</li>
+									<li><b>Using the Unity Profiler in development builds</b> helped us identify performance issues.</li>
 								</ul>
 								
 								<p>
 									For project management, we followed the <b>SCRUM agile development methodology</b> where a sprint lasted four weeks.
-									At the end of each sprint the customer reviewed the outcome and gave us feedback. We have heavily relied on using trello
+									At the end of each sprint the customer reviewed the outcome and gave us feedback. We have heavily relied on using <b>Trello</b>
 									to organize our sprints.
 								</p>
 
 								<div><a href="images/virtual_exhibition_trello.jpeg" class="image fit"><img src="images/virtual_exhibition_trello.jpeg" alt="" /></a></div>
 
 							</article>
+
+							<article class="post featured">
+								<header class="major">
+									<h2>ML pipeline for ECG health data</h2>
+									<h3>Internship @ <i>PPR Technologies inc.</i></h3>
+									<p class="technologies"><b>TECHNOLOGIES</b>: Python, Keras, KerasTuner, Cookiecutter, Git, Github</p>
+									<p>
+										Worked in a team of two developers to build a small, extensible and AutoML-based
+										pipeline to automatically determine which DL model performs best on ECG time-series
+										data.
+									</p>
+								</header>
+								<h3>Detailed Achievements</h3>
+									<ul>
+										<li>Used hyperparameter optimization algorithms such as:
+											hyperband, bayesian optimization and Random Search to determine the <i>best</i> hyperprameters in a given search space.
+										</li>
+										<li>
+											Built a well-documented, wrapper library that allowed very little technical knowledge to get it to work;
+											just importing the library and calling very basic functions.
+										</li>
+									</ul>
+
+							<a href="pdfs/summer_internship_report.pdf" class="center"><img src="images/summer_internship.PNG" class="iamge fit" alt="" /></a>
+							</article>
+							
+							<header class="major">
+								<h1>Personal Projects</h1>
+							</header>
 
 						<!-- Posts -->
 							<section class="posts">
