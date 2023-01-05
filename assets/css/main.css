@@ -85,7 +85,7 @@ input, select, textarea {
 }
 
 .center {
-	display: block;
+	display: flex;
  	margin-left: auto;
   	margin-right: auto;
  	width: 40%;
@@ -2609,6 +2609,20 @@ input, select, textarea {
 		.icon.brands:before {
 			font-family: 'Font Awesome 5 Brands';
 		}
+/* Video */
+.video-main-container{
+	position: relative;
+	width: 100%;
+	padding-bottom: 56.25%;
+	margin-bottom: 4%;
+  }
+  .video-main-container iframe{
+	position: absolute;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+  }
 
 /* Image */
 
@@ -2658,8 +2672,9 @@ input, select, textarea {
 
 		.image.main {
 			display: block;
-			margin: 4rem 0;
+			margin: 1rem 0;
 			width: 100%;
+			height: 100%;
 		}
 
 			.image.main:first-child {

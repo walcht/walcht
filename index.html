@@ -21,9 +21,10 @@
 					<div id="intro">
 						<h1>Walid Chtioui</h1>
 						<h2>Game Programmer</h2>
-						<p>Hello! My name is Walid, I'm currenty pursuing a double MSc degree in Computer Science at the University of Passau.<br />
+						<p>Hello! My name is Walid<sup>(He\Him)</sup>, I'm currenty pursuing a <strong>master's degree in Computer Science</strong> at the <i><b>University of Passau</b></i> 
+							in cooperation with the <i><b>National School of Computer Science, Tunisia</b></i>.<br />
 							
-							My focus areas are Game Development using the Unity game engine and Artificial Intelligence, mainly Deep Learning.<br />
+							My focus areas are <strong>Game Development</strong> using the Unity game engine and <strong>Artificial Intelligence</strong>, mainly Deep Learning.<br />
 
 							Below you can find my Portfolio highlighting some of my software development projects in the fields of Game Development and Artificial
 							Intelligence.
@@ -34,7 +35,6 @@
 					<nav id="nav">
 						<ul class="links">
 							<li class="active"><a href="index.html">Software Development</a></li>
-							<!-- <li><a href="elements.html">3D Modeling</a></li> -->
 						</ul>
 						<ul class="icons">
 							<li><a href="https://www.linkedin.com/in/walid-chtioui/" class="icon brands fa-linkedin"><span class="label"></span></a></li>
@@ -55,18 +55,30 @@
 									<p class="target platform"><b>TARGET PLATFORM(s)</b>: WebGL</p>
 									<p>
 										Virtual Exhibtion is a highly-customizable, immersive, 3D job fair that runs flawlessly on WebGl.
-										This is a freelance software development project done by a team of 2 people: fullstack web developer and game developer (me).
+										This is a freelance software development project done by a team of 2 developers; a fullstack web developer and me as a game developer.
+										<br /><i>Note: the frame rate of the videos below do NOT reflect the actual frame rate of the game.</i>
 									</p>
 								</header>
 								
-								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/y7W9pecGJZw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/5DGKh6OSwGc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/baJL_BKXEpw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-								<iframe width="auto" height="680" class="image main" src="https://www.youtube.com/embed/YdyFbcnIFKs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								<div class="video-main-container">
+									<iframe width="560" height="315" src="https://www.youtube.com/embed/y7W9pecGJZw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								</div>
+
+								<div class="video-main-container">
+									<iframe width="560" height="315" src="https://www.youtube.com/embed/5DGKh6OSwGc" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								</div>
+
+								<div class="video-main-container">
+									<iframe width="560" height="315" src="https://www.youtube.com/embed/baJL_BKXEpw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								</div>
 								
+								<div class="video-main-container">
+									<iframe width="560" height="315" src="https://www.youtube.com/embed/YdyFbcnIFKs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+								</div>
+
 								<p>
 									Since I wanted to learn as much as possible from this project, only two assets from the Unity Assets Store were used (for 3D Characters and sounds),
-									everything else was built\done from <i>scratch</i>; Character Movement, AI System, 3D Models, Camera Collision Avoidance, Lighting, Animations, etc...<br />
+									everything else was built from <i>scratch</i>; Character Movement, UI, AI System, 3D Models, Camera Collision Avoidance, Lighting, Animations, etc...<br />
 									<br />
 								</p>
 
@@ -95,7 +107,7 @@
 									<li>WebGl is single-threaded. CPU optimization is extremely important</li>
 									<li>Highly coupled and unmaintainable code base</li>
 									<li>Animations took alot of CPU time</li>
-									<li>Customizable Textures have to be requested during runtime</li>
+									<li>Customizable textures have to be requested during runtime</li>
 									<li>High numbers of draw calls and high number of vertices</li>
 									<li>Indoor realtime lighting heavily impacted game's performance</li>
 								</ol>
@@ -104,7 +116,7 @@
 								<ol>
 									<li><b>Reduced the number of materials by sharing materials across numerous 3D models</b>. Heavy use of <b>static batching</b> to reduce state changes.</li>
 									<li><b>ScriptableObjects as intermediate layers</b>. For instance, a ScriptableObject was used as an intermediate layer between the Input Manager and the objects
-										that required input. Another ScriptableObject was also used as a Scene Management intermediate layer.
+										that required input functionalities. Another ScriptableObject was also used as a Scene Management intermediate layer.
 										I've also relied heavily on using Manager Singletons. For instance, we had a <b>UIManager</b>, <b>CustomizationManager</b>, <b>TextureRequestManager</b>, etc...
 										All of these were put into a seperate, persistent Scene that holds all persistent GameObjects. This has greatly improved the structure of the project.
 									</li>
@@ -113,7 +125,7 @@
 									</li>
 									<li>
 										<b>Built a TextureRequestManager</b> that receives texture requests and executes them when possible. Since, for each scene, we have hundreds of texture
-										requests, this manager solved alot of issues by limiting how many texture requests can be served at a time.
+										requests, this manager solved a lot of issues by limiting how many texture requests can be served at a time.
 									</li>
 									<li>
 										<b>Manually merge models that share the same material together</b>, this was done for all the roof's 3D models.
@@ -127,22 +139,16 @@
 								<h3>We've learned that</h3>
 								<ul>
 									<li><b>Modern principles of software development are extremely important</b>. Not following these results in an unmaintainable project.</li>
-									<li><b>Singletons come with alot of disadvantages in Unity development environment</b>.
-										Using ScriptableObjects when possible proved to be a much better design choice.</li>
-									<li><b>We should optimize for the target platform</b>. WebGl is single-threaded, most performance issues are caused by CPU-bottleneck.
-										For example, reducing vertex-count of 3D objects won't help that much.</li>
-									<li><b>Using a CI\CD pipeline could've saved us alot of time</b>. Many times we had to rebuild the whole project because
-										of an error that could had been easily detected.</li>
-									<li><b>Using the Unity Profiler in development builds</b> helped us identify performance issues.</li>
+									<li><b>Singletons come with a lot of disadvantages in Unity development environment</b>.
+										Using ScriptableObjects when possible proved to be a better design choice.</li>
+									<li><b>We should optimize for the target platform</b>. WebGl is single-threaded, most performance issues are caused by CPU-bottleneck,
+										thus reducing vertex-count of 3D objects wasn't very helpful in improving the performance.</li>
+									<li><b>Using a CI\CD pipeline could've saved us a lot of time</b>. Many times we had to rebuild the whole project because
+										of an error that could had been easily detected in the integration phase.</li>
+									<li><b>Using the Unity Profiler in development builds</b> helped us identify numerous performance issues.</li>
 								</ul>
 								
-								<p>
-									For project management, we followed the <b>SCRUM agile development methodology</b> where a sprint lasted four weeks.
-									At the end of each sprint the customer reviewed the outcome and gave us feedback. We have heavily relied on using <b>Trello</b>
-									to organize our sprints.
-								</p>
-
-								<div><a href="images/virtual_exhibition_trello.jpeg" class="image fit"><img src="images/virtual_exhibition_trello.jpeg" alt="" /></a></div>
+								<p><span class="image left"><a href="images/virtual_exhibition_trello.jpeg" class="image fit"><img src="images/virtual_exhibition_trello.jpeg" alt="" /></a></span>For project management, we followed the <b>SCRUM agile development methodology</b> where a sprint lasted four weeks. At the end of each sprint the customer reviewed the outcome and gave us feedback. We have heavily relied on using <b>Trello</b> to organize our sprints.</p>
 
 							</article>
 
@@ -151,28 +157,35 @@
 									<h2>ML pipeline for ECG health data</h2>
 									<h3>Internship @ <i>PPR Technologies inc.</i></h3>
 									<p class="technologies"><b>TECHNOLOGIES</b>: Python, Keras, KerasTuner, Cookiecutter, Git, Github</p>
-									<p>
-										Worked in a team of two developers to build a small, extensible and AutoML-based
-										pipeline to automatically determine which DL model performs best on ECG time-series
-										data.
-									</p>
 								</header>
+
+								<p><span class="image left"><a href="pdfs/summer_internship_report.pdf" class="image fit"><img src="images/summer_internship.PNG" alt="" /></a></span>
+									Worked in a team of two developers to build a small, extensible and AutoML-based
+									pipeline to automatically determine which deep learning model performs best on ECG, time-series
+									data.
+									<br />
+									<br />
+								</p>
+
 								<h3>Detailed Achievements</h3>
 									<ul>
-										<li>Used hyperparameter optimization algorithms such as:
-											hyperband, bayesian optimization and Random Search to determine the <i>best</i> hyperprameters in a given search space.
+										<li>Used hyperparameter optimization (HPO) algorithms such as:
+											Hyperband, Bayesian Optimization and Random Search to determine the <i>best</i> hyperprameters in a given search space.
 										</li>
 										<li>
 											Built a well-documented, wrapper library that allowed very little technical knowledge to get it to work;
 											just importing the library and calling very basic functions.
 										</li>
 									</ul>
-
-							<a href="pdfs/summer_internship_report.pdf" class="center"><img src="images/summer_internship.PNG" class="iamge fit" alt="" /></a>
 							</article>
 							
 							<header class="major">
 								<h1>Personal Projects</h1>
+								<p>
+									Below is a list of my open-source personal projects. Some of these are not <i>yet</i> fully completed.
+									I've mostly done these projects during my first two years of Computer Science studies as a hobby to practically apply
+									the subjects I was studying.
+								</p>
 							</header>
 
 						<!-- Posts -->
@@ -183,9 +196,9 @@
 										<p class="technologies">Unity3D, C#, UI Toolkit</p>
 									</header>
 									<a href="images/spawn_editor.jpeg" class="image fit"><img src="images/spawn_editor.jpeg" alt="" /></a>
-									<p>Built a custom editor for the Unity engine using UI Toolkit to edit spawn\waypoints positions</p>
+									<p>Built a custom editor for the Unity engine using UI Toolkit to edit spawn\waypoint positions</p>
 									<ul>
-										<li>Ability to edit spawn positions from both the inspector and the scene view</li>
+										<li>Ability to edit spawn positions from both the Inspector and the Scene View</li>
 									</ul>
 									
 									<ul class="actions special">
@@ -202,7 +215,7 @@
 									
 									<ul>
 										<li>Wrote the flight controller code for ESP32 microcontroller using C/C++ and PlatformIO</li>
-										<li>Wrote a full guide explaining how to build a quadcopter from <i>scratch</i></li>
+										<li>Wrote a full guide on how to build a quadcopter from <i>scratch</i></li>
 									</ul>
 									
 									<ul class="actions special">
@@ -215,11 +228,11 @@
 										<p class="technologies">C/C++, SDL2, Make</p>
 									</header>
 									<a href="https://raw.githubusercontent.com/walcht/SDL-labyrinth-game/master/gifs/gameplay.gif" class="image fit"><img src="https://raw.githubusercontent.com/walcht/SDL-labyrinth-game/master/gifs/gameplay.gif" alt="" /></a>
-									<p>A simple random-maze-generated game made using C/C++ with SDL2.0 library</p>
+									<p>A simple random-maze-generated game made using C/C++ with SDL2.0 graphics library</p>
 
 									<ul>
 										<li>Used a backtracking algorithm to generate random mazes</li>
-										<li>Understood core gane development concepts such as: game loop design, importance of capturing the time between last two frames</li>
+										<li>Understood core game development concepts such as: game loop, importance of capturing the time between last two frames</li>
 										<li>Learned the importance of game programming designs; the whole game was written in just one file which made the code completely unmaintainable</li>
 									</ul>
 
@@ -233,7 +246,7 @@
 										<p class="technologies">C/C++, WxWidgets, Make</p>
 									</header>
 									<a href="images/encbench.png" class="image fit"><img src="images/encbench.png" alt="" /></a>
-									<p>EncBench is GUI application that allows you to visualize benchmark results of numerous encryption algorithms using GO programming language</p>
+									<p>EncBench is GUI application that allows you to visualize benchmark results of numerous encryption algorithms that are run using the GO programming language</p>
 
 									<ul>
 										<li>Designed and built the GUI using C/C++, WxWidgets GUI library and Make</li>
@@ -253,7 +266,7 @@
 										<p class="technologies">C/C++, WxWidgets, Make</p>
 									</header>
 									<a href="images/nrf-transmitter.jpg" class="image fit"><img src="images/nrf-transmitter.jpg" alt="" /></a>
-									<p>Generic transmitter based on ESP32 \ Arduino boards using nRF24 transceiver module</p>
+									<p>Generic transmitter based on ESP32\Arduino boards using nRF24 transceiver module</p>
 
 									<ul>
 										<li>Assembled the transmitter using ESP32 as a microcontroller</li>
@@ -275,7 +288,7 @@
 									<ul>
 										<li>Wrote a small case layout graphics library</li>
 										<li>Implemented pathfinding algorithms such as: DFS, BFS, HC, and A* with custom heuristic function</li>
-										<li>Made sure that the code is extremely easy to read for newcomers into the AI field to learn from</li>
+										<li>Made sure that the code is extremely easy to read for newcomers into the A.I. field to learn from</li>
 									</ul>
 
 									<ul class="actions special">
@@ -291,7 +304,7 @@
 						<section class="split contact">
 							<section>
 								<h3>Email</h3>
-								<p><a href="#">walid.chtioui@ensi-uma.tn</a></p>
+								<p>walid.chtioui@ensi-uma.tn</p>
 							</section>
 							<section>
 								<h3>Social</h3>
