@@ -1,0 +1,30 @@
+---
+title: /projects
+layout: home
+permalink: /projects
+---
+
+<h1>Maintained Projects</h1>
+
+<ul>
+  {% for project in site.data.projects %}
+  {% if project.still_maintained == true %}
+  <li>
+    <a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}
+  </li>
+  {% endif %}
+  {% endfor %}
+</ul>
+
+
+<h1>No-Longer Maintained Projects</h1>
+
+<ul>
+  {% for project in site.data.projects %}
+  {% if project.still_maintained == false %}
+  <li>
+    <a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}
+  </li>
+  {% endif %}
+  {% endfor %}
+</ul>

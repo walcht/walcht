@@ -1,0 +1,17 @@
+---
+title: /guides
+layout: home
+permalink: /guides
+---
+
+<h1>Guides</h1>
+
+{% if site.guides.size > 0 %}
+  <ul>
+    {% for guide in site.guides %}
+    <li>
+      <a href="{{ guide.url | relative_url }}">{{ guide.title | escape }}</a> - {{ guide.short_desc }}
+    </li>
+    {% endfor %}
+  </ul>
+{% endif %}

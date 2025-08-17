@@ -1,0 +1,47 @@
+- name: Unity CT Visualizer
+  repo: https://github.com/walcht/com.walcht.ctvisualizer
+  short_desc: High performance, out-of-core CT/MRI volume visualizer for very large datasets using the Unity game engine
+  thumbnail: /assets/images/audi-ar-hud.jpeg
+  still_maintained: true
+- name: Neovim Unity
+  repo: https://github.com/walcht/neovim-unity
+  short_desc: Ready-to-use, pre-configured Neovim for game development using Unity game engine
+  thumbnail: /assets/images/neovim-unity.jpeg
+  still_maintained: true
+- name: CVDS Converter
+  repo: https://github.com/walcht/cvds
+  short_desc: Chunked Volumetric DataSet (CVDS) converter for out-of-core visualization of very large volumetric datasets
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: true
+- name: Unity TextureSubPlugin
+  repo: https://github.com/walcht/TextureSubPlugin
+  short_desc: Unity low-level native plugin for uploading data to chunks of a 2D/3D Texture on the GPU
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: true
+- name: Unity Neovim IDE
+  repo: Neovim integration with the Unity game engine. Inspired from similar package for VSCode 
+  short_desc: Neovim integration with the Unity game engine. Inspired from similar package for VSCode
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: true
+- name: Unity DAP
+  repo: https://github.com/walcht/unity-dap
+  short_desc: Unity Debug Adapter Implementation for the Mono Runtime
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: true
+- name: 3D Punching Bag Game
+  repo: https://github.com/walcht/3D-punching-bag
+  short_desc: A 3D punching bag, reaction-based and small game created in three.js
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: false
+- name: UnityD3
+  repo: https://github.com/walcht/com.walcht.unityd3
+  short_desc: A Unity plugin for authoring visualizations in d3.js-like style in the Unity game engine
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: false
+- name: UK Car Accidents Dashboard
+  repo: 
+  short_desc: Visualization dashboard of a UK traffic accidents dataset using d3.js
+  thumbnail: /assets/images/cvds.jpeg
+  still_maintained: false
+  
+
