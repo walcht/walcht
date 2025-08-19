@@ -19,7 +19,7 @@
   thumbnail: /assets/images/cvds.jpeg
   still_maintained: true
 - name: Unity Neovim IDE
-  repo: Neovim integration with the Unity game engine. Inspired from similar package for VSCode 
+  repo: https://github.com/walcht/com.walcht.ide.neovim
   short_desc: Neovim integration with the Unity game engine. Inspired from similar package for VSCode
   thumbnail: /assets/images/cvds.jpeg
   still_maintained: true
@@ -39,7 +39,7 @@
   thumbnail: /assets/images/cvds.jpeg
   still_maintained: false
 - name: UK Car Accidents Dashboard
-  repo: 
+  repo: https://github.com/walcht/data-visualization
   short_desc: Visualization dashboard of a UK traffic accidents dataset using d3.js
   thumbnail: /assets/images/cvds.jpeg
   still_maintained: false
