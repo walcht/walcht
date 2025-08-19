@@ -12,8 +12,6 @@ collections:
     output: true
   posts:
     output: true
-  videos:
-    output: true
 
 style: dark
 listen_for_clients_preferred_style: true
