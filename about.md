@@ -1,7 +1,7 @@
 ---
 title: /about
 layout: home
-permalink: /about
+permalink: /
 ---
 
 * Do not remove this line (it will not be displayed)
