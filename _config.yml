@@ -4,7 +4,6 @@ plugins:
 header_pages:
   - about.md
   - projects.html
-  - blogs.html
   - guides.html
 
 collections:

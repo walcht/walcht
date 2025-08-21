@@ -65,7 +65,8 @@ the concept of *AR HUD* has to be explained. What I am writing here is public kn
 the direct field of view of the driver. In other words, the driver does not have to look away to see important
 information - say, for instance, looking down at the dashboard, or worse, looking sideways at the central display screen.
 
-![AR HUD static vs. AR fields][ar-hud-static-vs-ar-images]
+
+<img loading="lazy" src="assets/images/ar-hud-static-vs-ar-images.jpeg" alt="AR HUD static vs. AR fields" />
 
 This picture illustrates the two projection fields for the HUD:
 - the status field (or *near field*) is mainly used for 2D status information (e.g., speed, current traffic sign, and general status messages). The near field is not meant for
@@ -112,7 +113,7 @@ how to subscribe to certain services/interfaces. Used technologies: C++, CMake, 
 - Contributed to identifying and solving issues related with certain AR-HUD functionalities. E.g.,
 Audi's global drone positioning improvements (the blue arrows):
 
-  ![Global navigation drone on Audi Q4 etronm][global-navigation-drone-audi]
+  <img loading="lazy" src="assets/images/audi-ar-hud.jpeg" alt="Audi AR HUD" />
     
   Positioning a global element (in this case the turn icon) in the body coordinate system (BCS)
   of the car is quite challenging and heavily dependent on the accuracy of global positioning
@@ -168,8 +169,6 @@ Tunisia (IPEIT). Relevant coursework:
 
 [resume]: https://github.com/walcht
 [linkedin]: https://linkedin.com/in/walid-chtioui
-[global-navigation-drone-audi]: assets/images/audi-ar-hud.jpeg
-[ar-hud-static-vs-ar-images]: assets/images/ar-hud-static-vs-ar-images.jpeg
 [nds]: https://nds-association.org/
 [cariad]: https://cariad.technology/
 [esolutions]: https://www.esolutions.de/de/

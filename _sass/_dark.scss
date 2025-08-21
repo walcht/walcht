@@ -1,17 +1,13 @@
-/**
- * Dark theme variables
- */
-
 :root {
-  --base-color: #f5f5f5;
-  --background-color: #1b1b1b;
-  --border: dashed 1px rgba(219, 219, 219, 0.9);
+  --base-color: #c7ccd2;
+  --background-color: #0d1117;
+  --border: solid 1px rgba(219, 219, 219, 0.9);
   --selection-background: var(--base-color);
   --selection-text: var(--background-color);
   --text-color: var(--base-color);
   --placeholder-color: var(--base-color);
   --link-color: #8cb4ff;
-  --current-header-bg-color: #025159;
+  --current-header-bg-color: #242831;
   --code-color-1: #aaaaaa;
   --code-color-2: #ffffcc;
   --code-color-3: #F00000;
@@ -31,16 +27,3 @@
   --code-color-17: #800000;
   --code-color-18: #bbbbbb;
 }
-/**
-bf2042
-#011c26  // dark
-#025159  // dark green
-#08A696  // faded green
-#26FFDF  // main green
-#F26A1B  // orange
-#FF2C10  // red
-
-#FE8019  // orange
-*/
-
-
