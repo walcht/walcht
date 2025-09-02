@@ -48,3 +48,8 @@ Gemfile.lock
 _site/
 .jekyll-cache/
 .sass-cache/
+
+_gists/network_programming/
+!_gists/network_programming/*.c
+!_gists/network_programming/*.cpp
+
