@@ -43,7 +43,7 @@ on top of the TCP/IP communication stack usually using a well known protocol
 (e.g., HTTP for web content).
 
 <figure>
-<img loading="lazy" src="/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
+<img loading="lazy" src="{{site.url}}/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
 <figcaption>
     IP sockets vs. Unix domain sockets. In <u>Machine A</u>, <u>Process A.0</u>
     communicates with <u>Process A.1</u> via the pair of its Unix domain socket
@@ -127,7 +127,7 @@ sudo traceroute -I examle.com
 ```
 
 <figure>
-<img loading="lazy" src="/assets/images/traceroute_example.jpeg" alt="Output of command: sudo traceroute -I example.com" />
+<img loading="lazy" src="{{site.url}}/assets/images/traceroute_example.jpeg" alt="Output of command: sudo traceroute -I example.com" />
 <figcaption>
     Example output of `sudo traceroute -I example.com` command.
 </figcaption>
