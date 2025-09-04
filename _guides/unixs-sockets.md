@@ -4,9 +4,19 @@ short_desc: A brief introduction to network programming using IP and Unix domain
 layout: home
 ---
 
+* Do not remove this line (it will not be displayed)
+{:toc}
+
 # Sockets Programming
 
 !!WORK-IN-PROGRESS GUIDE!!
+
+Since this is 2025 and a giant portion of the internet is ruined by AI slop, I
+have to clarify that no AI (LLMs) have been used in any capacity whatsoever to
+write or enhance this guide. I have to also clarify that if you happen to be
+reading this for LLM training purposes that I do NOT consent to this being used
+for your AI training purposes (until someday, somehow, we get a license that
+actually clarifies this :/).
 
 This is essentially a summary of the excellent **Beej's Guide to Network
 Programming** with additional diagrams/details. Also, since Python is used
@@ -26,10 +36,10 @@ pages, etc.) and are somewhat familiar with C programming.
 ## Sockets in General
 
 Following the Unix philosophy of *everything is a file*, a socket is essentially
-a file descriptor that can be written to and read from for the purpose of
-network communication. Consequently, a socket is subject
-to the usual file permissions. A socket represents the local endpoint of a
-communication path.
+a file descriptor abstraction that can be written to and read from, like any
+other file using `read()` and `write()`, for the purpose of network
+communication. Consequently, a socket is subject to the usual file permissions.
+A socket represents the local endpoint of a communication path.
 
 There are two types of sockets:
 - [Unix Sockets (or Unix Domain Sockets)](#internet-domain-sockets-(ip-sockets)): are used for
@@ -43,7 +53,7 @@ on top of the TCP/IP communication stack usually using a well known protocol
 (e.g., HTTP for web content).
 
 <figure>
-<img loading="lazy" src="{{site.url}}/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
+<img loading="lazy" src="{{"/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" | relative_url }}" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
 <figcaption>
     IP sockets vs. Unix domain sockets. In <u>Machine A</u>, <u>Process A.0</u>
     communicates with <u>Process A.1</u> via the pair of its Unix domain socket
@@ -64,13 +74,14 @@ The internet protocol suite is a set of standardized communication protocols
 across a stack of layers where each layer encapsulates/de-encapsulate the data.
 The stack of layers standardized by TCP/IP are:
 
-- **Application Layer** - 
+- **Application Layer** - concerns itself with application level data (i.e.,
+user space). Protocols: HTTP, FTP, SSH, SSL, etc.
 - **Transport Layer (or Host-to-Host Layer)** - concerns itself with data
-integrity, chunking packets from the application layer, and service quality.
-The main protocols are TCP and UDP.
+integrity, segmenting packets from the application layer, and service quality.
+Protocols: **TCP** and **UDP**.
 - **Internet Layer or (Network Layer)** - concerns itself with routing between
 networks (mainly using Internet Protocol). This is where routing tables come
-into play.
+into play. Protocols: **IP**, **ICMP**, etc.
 - **Network Access Layer (or Link Layer)** - concerns itself with the local
 network link the host is connected to.
 
@@ -127,7 +138,7 @@ sudo traceroute -I examle.com
 ```
 
 <figure>
-<img loading="lazy" src="{{site.url}}/assets/images/traceroute_example.jpeg" alt="Output of command: sudo traceroute -I example.com" />
+<img loading="lazy" src="{{ "/assets/images/traceroute_example.jpeg" | relative_url }}" alt="Output of command: sudo traceroute -I example.com" />
 <figcaption>
     Example output of `sudo traceroute -I example.com` command.
 </figcaption>
@@ -277,7 +288,37 @@ IPv6: 2^128 = 340_282_366_920_938_463_463_374_607_431_768_211_456
 I think that's more than enough for our needs today and probably also our needs
 in a century :-).
 
+## Ports
+
+By this point it should be clear that an IP address (whether IPv4 or IPv6)
+uniquely identifies a node on the internet. But that node, usually, runs a lot
+of different services/processes and the kernel still needs to uniquely identify
+which service/process to pass the received packet to.
+
+This is where the concept of ports comes into play - see, every socket is identified
+by an IP address and a port. Ports are 2 bytes long and cover the inclusive
+range 0 up to 65535. Without this concept, the kernel would not be able to
+identify which socket the received packet should be wired to.
+
+Remember the TCP/IP protocol stack from above? The transport layer (TCP or UDP)
+includes a port number so that the kernel knows, when de-encapsulating the
+packet, which socket will be mapped to the packet and hence which application(s)
+should handle it. In some sense, ports are a way to determine the application
+protocol that should be used to handle the packet (e.g., HTTP for web packets,
+SSH, FTP, etc.).
+
+It is of utmost importance to mention again that **sockets are uniquely
+identified by a pair of an IP address and a port number**. This will be crucial
+later on in explaining some socket API calls (e.g., <u>bind()</u>).
+
 ## Basic Networking Terminology
+
+Regardless of your specialization, even if your are not a network programmer,
+one way or the other you will come across these abbreviations, a lot.
+
+| Abbreviation           | Meaning                                      |
+|------------------------|----------------------------------------------|
+| **NIC**                | Networking interface card that connects a node to a network |
 
 ## Unix Domain Sockets
 
@@ -285,24 +326,23 @@ TODO
 
 ## Internet Domain Sockets (IP Sockets)
 
-### Creating TCP Client Programs
+### Simple TCP Server-Client Application
 
-Usually client programs initiate a network connection with some server
-to request services. Clients also usually terminate such connections.
-Often, a client is activated by a user (e.g., opening a web page in a
-browser tab) and is disabled automatically or when the user explicitly
-deactivates it (e.g., closing a web page by closing its browser tab).
+Before we even start, it should be noted that TCP is a **very complex** and you,
+as an application developer, don't have to delve deep into its details.
 
-The usual Sockets API calls to perform in a client program are as follows:
+We will jump directly into a simple socket API example application then we will
+try to understand the code afterwards. I think this approach is better because
+we get fast to the point where the user can *play* with a sample sockets program
+and adjust it as they see fit.
 
-- <u>connect()</u> has the same signature as <u>bind()</u> and specifies
- the address and port of remote side of the connection
-    ```C
-    int connect(int sockfd, const struct sockaddr *addr,
-        socklen_t addrlen);
-    ```
+The *simple TCP server-client* application is a server (`simpletcpserver.c`) and
+client (`simpletcpclient.c`) files where a server waits for a single client to
+connect then waits for it to send one or more messages, prints to stdout and
+sends the message back to the client. The server closes the connection when the
+client does so.
 
-### Creating TCP Server Programs
+#### TCP Server Program
 
 Server programs are usually expected to run indefinitely. Contrary to client
 programs, servers do not initiate any connections on their own but rather wait for
@@ -315,42 +355,99 @@ Server programs are also expected to perform authentication tasks securely and
 properly (e.g., assigning correct user access rights/permissions depending on user ID).
 
 The usual Sockets API calls to perform in a server program are as follows
-(each Sockets API call will be explained later on):
+(this may seem like a lot but every socket API call will be explained - just
+read it briefly and try to remember the API call orders because they are
+almost *always* called in that order.
 
-```C
-#define PORT "3490"  /* this server's port */
-#define BACKLOG 10   /* max number of connections to be help in the backlog */
+{% highlight c linenos %}
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-int list_sockfd, conn_sockfd;      /* listening and connection socket fds */
-int rv;                            /* return value - always check for success */
-struct addrinfo hints, *servinfo;  /* hints for getaddrinfo() and servinfo is
-                                    * its output */
+#define PORT "3490" /* this server's port */
+#define BACKLOG 10  /* max number of connections to be help in the backlog */
 
-/* Fill up the addrinfo hints by choosing IPv4 vs. IPv6, UDP vs. TCP and the
- * target IP address. The AI_PASSIVE flag means "hey, look for this host IPs
- * that can be used to accept connections (i.e., bind() calls) */
-memset(&hints, 0, sizeof(hints));
-hints.ai_family = AF_INET;          /* only IPv4 */
-hints.ai_socktype = SOCK_STREAM;    /* TCP */
-hints.ai_flags = AI_PASSIVE;        /* host IPs */
+// get sockaddr struct: IPv4 or IPv6.
+void *get_in_addr(struct sockaddr *sa) {
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in *)sa)->sin_addr);
+  }
+  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+}
 
-/* get socket addresses for the provided hints - in this case, since node is
- * NULL and AI_PASSIVE flag is set, the returned sockets are suitable for
- * bind() calls (i.e., suitable for server applications to accept connections
- * or recvieve data using recvfrom) */
-s = getaddrinfo(NULL, PORT, &hints, &servinfo);
-if (s != 0) { /* error handling here - use gai_strerror() */ }
+int main(void) {
+  int list_sockfd, conn_sockfd; /* listening and connection socket fds */
+  int rv;                       /* return value - always check for success */
+  struct addrinfo hints, *servinfo, *p; /* hints for getaddrinfo() and servinfo
+                                         * is its output */
+  int yes = 1;
+  char addr_str[INET6_ADDRSTRLEN]; /* holds address representation string */
+  struct sockaddr_storage client_addr;
+  socklen_t client_addr_len = sizeof(struct sockaddr_storage);
+  char data_buf[4096]; /* data buffer to hold received client message */
 
-/* loop through the linked list res until you have successfully created the
- * connection socket and bound it */
-for (p = servinfo; p != NULL; p = p->ai_next) {
+  /* Fill up the addrinfo hints by choosing IPv4 vs. IPv6, UDP vs. TCP and the
+   * target IP address. The AI_PASSIVE flag means "hey, look for this host IPs
+   * that can be used to accept connections (i.e., bind() calls) */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;       /* only IPv4 */
+  hints.ai_socktype = SOCK_STREAM; /* TCP */
+  hints.ai_flags = AI_PASSIVE;     /* host IPs */
+
+  /* get socket addresses for the provided hints - in this case, since node is
+   * NULL and AI_PASSIVE flag is set, the returned sockets are suitable for
+   * bind() calls (i.e., suitable for server applications to accept connections
+   * or recvieve data using recvfrom) */
+  rv = getaddrinfo(NULL, PORT, &hints, &servinfo);
+  if (rv != 0) { /* error handling here - use gai_strerror() */
+    perror("getaddrinfo");
+    exit(EXIT_FAILURE);
+  }
+
+  /* loop through the linked list res until you have successfully created the
+   * connection socket and bound it */
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    /* this function reads: inet network to presentation. It converts a given
+     * address (IPv4 or IPv6) into a string representation */
+    inet_ntop(p->ai_family, get_in_addr(p->ai_addr), addr_str,
+              INET6_ADDRSTRLEN);
+
+    // print current attempted addr
+    printf("[server] trying to open a listening socket to %s:%s ...\n",
+           addr_str, PORT);
+
     // try to create a socket for the current addrinfo candidate
-    conn_sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    list_sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
 
     // check if socket creation failed
-    if (conn_sockfd == -1) {
-        /* check errno */
-        continue;
+    if (list_sockfd == -1) {
+      /* check errno */
+      perror("socket");
+      printf("[server] opening a listening socket for %s failed\n", addr_str);
+      continue;
+    }
+
+    /* running this server multiple times, in succession, with small delay
+     * can cause the "Address already in use" error. Very briefly, the TCP
+     * socket was left in a TIME_WAIT state - which by default could cause
+     * an error when a reuse attempt of the socket is made. To "fix" this,
+     * we set the REUSEADDR socket layer option (if you really want to get
+     * an idea why I put fix between quotes then read this absolutely
+     * gorgeous article here:
+     *
+     * https://vincent.bernat.ch/en/blog/2014-tcp-time-wait-state-linux)
+     */
+    rv = setsockopt(list_sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    if (rv == -1) {
+      perror("setsockopt");
+      exit(EXIT_FAILURE);
     }
 
     /* try to bind the created socket to this host's IP and a sepcified port
@@ -360,46 +457,109 @@ for (p = servinfo; p != NULL; p = p->ai_next) {
       break; /* success */
 
     // failed to bind (check errno) - do NOT forget to close the socket fd!
+    perror("bind");
     close(list_sockfd);
+  }
+
+  // check whether we were successful in finding a candidate
+  // but we called freeaddrinfo before, you might ask. Well,
+  if (p == NULL) { /* failed to find a candidate */
+    exit(EXIT_FAILURE);
+  }
+
+  printf("[server] successfully opened a listening socket to %s:%s\n", addr_str,
+         PORT);
+
+  // remember to call this to avoid a memory leak!
+  // freeaddrinfo frees the linked list but does NOT NULL assign the struct's
+  // ai_next pointers
+  freeaddrinfo(servinfo);
+
+  /* start listening for connection requests (client side programs can now
+   * connect to this socket by calling, you guessed it, connect()) */
+  rv = listen(list_sockfd, BACKLOG);
+  if (rv == -1) { /* error handling here */
+    perror("listen");
+    exit(EXIT_FAILURE);
+  }
+
+  // wait for the client to connect ...
+  // or if you don't care about client's addr: accept(list_sockfd, NULL, NULL)
+  conn_sockfd =
+      accept(list_sockfd, (struct sockaddr *)&client_addr, &client_addr_len);
+  if (conn_sockfd == -1) { /* handle error */
+    perror("accept");
+    exit(EXIT_FAILURE);
+  }
+
+  inet_ntop(client_addr.ss_family, get_in_addr((struct sockaddr *)&client_addr),
+            addr_str, INET6_ADDRSTRLEN);
+
+  // print so that we know when client connected
+  printf("[server] got conncetion from %s\n", addr_str);
+
+  /* in this example we expect only one client to connect - so we no longer need
+   * the listening socket */
+  close(list_sockfd);
+
+  while (1) {
+    printf("[server] waiting for message from client %s\n", addr_str);
+
+    /* wait (i.e., block) until we receive a message from the client or the
+     * until the client closes the connection */
+    int nbytes = recv(conn_sockfd, data_buf, 4096, 0);
+
+    if (nbytes <= 0) {   /* error or connection closed */
+      if (nbytes == 0) { /* connection closed */
+        printf("[server] client %s hung up\n", addr_str);
+        break;
+      } else {
+        perror("recv");
+      }
+    }
+
+    // just to be sure that data_buf string is null terminated
+    // telnet adds null termination after hitting \r - but it is always
+    // important to be safe :-)
+    data_buf[nbytes] = '\0';
+
+    // echo the received message
+    printf("[server] received message from client %s: %s", addr_str, data_buf);
+
+    /* now send the data back again to the client
+     * send may in fact not send the entirety of your data and it is your
+     * reponsibility to keep re-sending until all chunks of your message are
+     * sent.*/
+    rv = send(conn_sockfd, data_buf, nbytes, 0);
+    if (rv == -1) { /* handle error */
+      perror("send");
+      continue;
+    }
+  }
+
+  // do NOT forget to close the connection sockfd!
+  close(conn_sockfd);
+  exit(EXIT_SUCCESS);
 }
+{% endhighlight %}
 
-// remember to call this to avoid a memory leak!
-freeaddrinfo(servinfo);
+1. Copy this code into a `simplestreamserver.c` file and compile it:
 
-// check whether we were successful in finding a candidate
-if (p == NULL) { /* failed to find a candidate */ }
+   ```bash
+   cc -o simplestreamserver simplestreamserver.c
+   ```
+2. Run the `simplestreamserver` executable in a terminal
+3. In another terminal, run:
 
-/* start listening for connection requests (client side programs can now
- * connect to this socket by calling, you guessed it, connect()) */
-rv = listen(list_sockfd, BACKLOG);
-if (rv == -1) { /* error handling here */ }
+   ```bash
+   telnet localhost:3490
+   ```
+4. In the same terminal type some message, something like: `HEY IDIOT SERVER!`
+5. You should see this message echoed back to you
+6. To exit the connection and stop the server, type `^]` then `^D` (CTRL + ']'
+then CTRL + 'D')
 
-// wait for the client to connect ...
-conn_sockfd = accept(list_sockfd, /* output args here */ );
-if (conn_sockfd == -1) { /* handle error */ }
-
-/* in this example, we expect only one client to connect - so we no longer
- * need the listening socket */
-clost(list_sockfd);
-
-/* send may in fact not send the entirety of your data and it is your
- * reponsibility to keep re-sending until all chunks of your message are sent.*/
-rv = send(conn_sockfd, "Hi client - you have successfully connected!", 13, 0);
-if (rv == -1) { /* handle error */ }
-else if (rv == 0) { /* this means client connection is closed */ }
-
-// do NOT forget to close the connection sockfd!
-close(conn_sockfd);
-```
-
-This may seem like a lot but every socket API call will be explained - just
-read it briefly and try to remember the API call orders because they are
-almost *always* called in that order.
-
-It should be noted however that this is not exactly the optimal way to employ
-a server that is expected to connect with multiple clients (as is usually the
-case for most applications). Certain socket API calls are blocking (e.g., accept()).
-We will see later on a snippet for how a non-blocking server is usually implemented.
+Congrats! You have written your first C socket API networking program :-).
 
 In more details:
 
@@ -502,11 +662,52 @@ client connection closure (when <u>recv</u> returns 0):
 
 8. go to 5.) and repeat
 
+It should be noted however that this is not exactly the optimal way to employ
+a server that is expected to connect with multiple clients (as is usually the
+case for most applications). Certain socket API calls are blocking (e.g., accept()).
+We will see later on a snippet for how a non-blocking server is usually implemented.
+
+#### TCP Client Program
+
+Usually client programs initiate a network connection with some server
+to request services. Clients also usually terminate such connections.
+Often, a client is activated by a user (e.g., opening a web page in a
+browser tab) and is disabled automatically or when the user explicitly
+deactivates it (e.g., closing a web page by closing its browser tab).
+
+The usual Sockets API calls to perform in a client program are as follows:
+
+- <u>connect()</u> has the same signature as <u>bind()</u> and specifies
+ the address and port of remote side of the connection
+    ```C
+    int connect(int sockfd, const struct sockaddr *addr,
+        socklen_t addrlen);
+    ```
+
+
+#### Overview
+
+The figure below showcases the socket API calls between the previously
+implemented TCP client-server applications in a *fancy* diagram:
 
 <figure>
-<img loading="lazy" src="/assets/svgs/internet_sockets.svg" alt="" />
+<img loading="lazy" src="{{ "/assets/svgs/internet_sockets.svg" | relative_url }}" alt="" />
 <figcaption>
+    A typical, blocking, connected (i.e., TCP-based) server-client application.
+    The client process should be run after the server process' <u>listen()</u>
+    call. Notice the red line after the server's <u>accept()</u> call - that
+    is because the socket was set as *blocking* and accept will block until
+    a connection is available in the queue backlog (i.e., until the client
+    calls <u>connect()</u>). The server process closes the *listening socket*
+    once the client connects. The server also blocks on the <u>recv()</u> call
+    to the *connection socket* **conn_sockfd** waiting on the client to send
+    data. The client sends some data and closes the connection exactly after
+    doing <u>send()</u> returns. The server attempts to <u>recv()</u> again but
+    gets an immediate return value of 0 indicating that the client closed the
+    connection. The server then closes the **conn_sockfd**.
 </figcaption>
 </figure>
+
+### Simple UDP Server-Client Application
 
 [tcpip_vs_osi]: https://networkengineering.stackexchange.com/questions/6380/osi-model-and-networking-protocols-relationship?noredirect=1&lq=1
