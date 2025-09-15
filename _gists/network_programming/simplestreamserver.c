@@ -1,16 +1,7 @@
-/*
- * run this in some terminal
- * in another terminal run:
- *  telnet hostmachinename 3490
- *
- * where hostmachinename is the name of the machine you are running on
- *
- */
+#include "sockethelpers.h"
 #include <arpa/inet.h>
-#include <errno.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -19,119 +10,168 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define PORT "3490"
-#define BACKLOG 1 // max nbr pending connections to be help
-
-void sigchld_handler(int s) {
-  (void)s; // so that compiler doesn't bitch about unused variable warning
-  // save errno because it might be overwritten by waitpid()
-  int saved_errno = errno;
-  while (waitpid(-1, NULL, WNOHANG) > 0)
-    ;
-  errno = saved_errno;
-}
-
-// get sockaddr struct: IPv4 or IPv6.
-void *get_in_addr(struct sockaddr *sa) {
-  if (sa->sa_family == AF_INET) {
-    return &(((struct sockaddr_in *)sa)->sin_addr);
-  }
-  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
-}
+#define PORT "3490" /* this server's port */
+#define BACKLOG 10  /* max number of connections to be help in the backlog */
 
 int main(void) {
-  int sockfd;
-  struct addrinfo hints, *servinfo;
+  int list_sockfd, conn_sockfd; /* listening and connection socket fds */
+  int rv;                       /* return value - always check for success */
+  struct addrinfo hints, *servinfo, *p; /* hints for getaddrinfo() and servinfo
+                                         * is its output */
   int yes = 1;
+  char addr_str[INET6_ADDRSTRLEN]; /* holds address representation string */
+  struct sockaddr_storage client_addr;
+  socklen_t client_addr_len = sizeof(struct sockaddr_storage);
+  char data_buf[4096]; /* data buffer to hold received client message */
 
-  memset(&hints, 0, sizeof hints);
-  hints.ai_family = AF_INET;       // IPv4
-  hints.ai_socktype = SOCK_STREAM; // TCP
-  hints.ai_flags = AI_PASSIVE;     // use my IP
+  /* Fill up the addrinfo hints by choosing IPv4 vs. IPv6, UDP vs. TCP and the
+   * target IP address. The AI_PASSIVE flag means "hey, look for this host IPs
+   * that can be used to accept connections (i.e., bind() calls) */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;       /* only IPv4 */
+  hints.ai_socktype = SOCK_STREAM; /* TCP */
+  hints.ai_flags = AI_PASSIVE;     /* host IPs */
 
-  int rv; // return value
-  if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
-    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-    return 1;
+  /* get socket addresses for the provided hints - in this case, since node is
+   * NULL and AI_PASSIVE flag is set, the returned sockets are suitable for
+   * bind() calls (i.e., suitable for server applications to accept connections
+   * or recvieve data using recvfrom) */
+  rv = getaddrinfo(NULL, PORT, &hints, &servinfo);
+  if (rv != 0) { /* error handling here - use gai_strerror() */
+    perror("getaddrinfo");
+    exit(EXIT_FAILURE);
   }
 
-  // loop through all the results and bind to the first one possible
-  struct addrinfo *p;
+  /* loop through the linked list res until you have successfully created the
+   * connection socket and bound it */
   for (p = servinfo; p != NULL; p = p->ai_next) {
-    if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
-      perror("server: socket");
+    /* this function reads: inet network to presentation. It converts a given
+     * address (IPv4 or IPv6) into a string representation */
+    inet_ntop(p->ai_family, get_addr_struct(p->ai_addr), addr_str,
+              INET6_ADDRSTRLEN);
+
+    // print current attempted addr
+    printf("[server] trying to open a listening socket at %s:%s ...\n",
+           addr_str, PORT);
+
+    // try to create a socket for the current addrinfo candidate
+    list_sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+
+    // check if socket creation failed
+    if (list_sockfd == -1) {
+      /* check errno */
+      perror("socket");
+      printf("[server] opening a listening socket for %s failed\n", addr_str);
       continue;
     }
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1) {
+    /* running this server multiple times, in succession, with small delay
+     * can cause the "Address already in use" error. Very briefly, the TCP
+     * socket was left in a TIME_WAIT state - which by default could cause
+     * an error when a reuse attempt of the socket is made. To "fix" this,
+     * we set the REUSEADDR socket layer option (if you really want to get
+     * an idea why I put fix between quotes then read this absolutely
+     * gorgeous article here:
+     *
+     * https://vincent.bernat.ch/en/blog/2014-tcp-time-wait-state-linux)
+     */
+    rv = setsockopt(list_sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+    if (rv == -1) {
       perror("setsockopt");
-      exit(1);
+      exit(EXIT_FAILURE);
     }
 
-    if (bind(sockfd, p->ai_addr, p->ai_addrlen) == -1) {
-      close(sockfd);
-      perror("server: bind");
-      continue;
-    }
+    /* try to bind the created socket to this host's IP and a sepcified port
+     * p->ai_addr contains this host's IP address and the port */
+    rv = bind(list_sockfd, p->ai_addr, p->ai_addrlen);
+    if (rv == 0)
+      break; /* success */
 
-    // success: found a candidate
-    break;
+    // failed to bind (check errno) - do NOT forget to close the socket fd!
+    perror("bind");
+    close(list_sockfd);
   }
 
-  // check if we failed in finding a candidate
-  if (p == NULL) {
-    fprintf(stderr, "server: failed to bind\n");
-    exit(1);
+  // check whether we were successful in finding a candidate
+  // but we called freeaddrinfo before, you might ask. Well,
+  if (p == NULL) { /* failed to find a candidate */
+    exit(EXIT_FAILURE);
   }
 
-  // free the servinfo struct filled by getaddrinfo
+  printf("[server] successfully opened a listening socket to %s:%s\n", addr_str,
+         PORT);
+
+  // remember to call this to avoid a memory leak!
+  // freeaddrinfo frees the linked list but does NOT NULL assign the struct's
+  // ai_next pointers
   freeaddrinfo(servinfo);
 
-  if (listen(sockfd, BACKLOG) == -1) {
+  /* start listening for connection requests (client side programs can now
+   * connect to this socket by calling, you guessed it, connect()) */
+  rv = listen(list_sockfd, BACKLOG);
+  if (rv == -1) { /* error handling here */
     perror("listen");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
-  struct sigaction sa;
-  sa.sa_handler = sigchld_handler;
-  sigemptyset(&sa.sa_mask);
-  sa.sa_flags = SA_RESTART;
-  if (sigaction(SIGCHLD, &sa, NULL) == -1) {
-    perror("sigaction");
-    exit(1);
+  // wait for the client to connect ...
+  // or if you don't care about client's addr: accept(list_sockfd, NULL, NULL)
+  conn_sockfd =
+      accept(list_sockfd, (struct sockaddr *)&client_addr, &client_addr_len);
+  if (conn_sockfd == -1) { /* handle error */
+    perror("accept");
+    exit(EXIT_FAILURE);
   }
 
-  printf("server: waiting for connections ...\n");
+  inet_ntop(client_addr.ss_family,
+            get_addr_struct((struct sockaddr *)&client_addr), addr_str,
+            INET6_ADDRSTRLEN);
 
-  struct sockaddr_storage their_addr; // connector's address
-  socklen_t sin_size;
-  int new_fd;
-  char addr_str[INET6_ADDRSTRLEN];
+  // print so that we know when client connected
+  printf("[server] got conncetion from %s:%d\n", addr_str,
+         get_port((struct sockaddr *)&client_addr));
+
+  /* in this example we expect only one client to connect - so we no longer need
+   * the listening socket */
+  close(list_sockfd);
+
   while (1) {
-    sin_size = sizeof their_addr;
-    new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
-    if (new_fd == -1) {
-      perror("accept");
+    printf("[server] waiting for message from client %s\n", addr_str);
+
+    /* wait (i.e., block) until we receive a message from the client or the
+     * until the client closes the connection */
+    int nbytes = recv(conn_sockfd, data_buf, 4096, 0);
+
+    if (nbytes <= 0) {   /* error or connection closed */
+      if (nbytes == 0) { /* connection closed */
+        printf("[server] client %s hung up\n", addr_str);
+        break;
+      } else {
+        perror("recv");
+      }
+    }
+
+    // just to be sure that data_buf string is null terminated
+    // telnet adds null termination after hitting \r - but it is always
+    // important to be safe :-)
+    data_buf[nbytes] = '\0';
+
+    // echo the received message
+    printf("[server] received message from client %s:%d\n", addr_str,
+           get_port((struct sockaddr *)&client_addr));
+
+    /* now send the data back again to the client
+     * send may in fact not send the entirety of your data and it is your
+     * reponsibility to keep re-sending until all chunks of your message are
+     * sent.*/
+    rv = send(conn_sockfd, data_buf, nbytes, 0);
+    if (rv == -1) { /* handle error */
+      perror("send");
       continue;
     }
+  }
 
-    inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr),
-              addr_str, sizeof addr_str);
-
-    printf("server: got conncetion from %s\n", addr_str);
-
-    if (!fork()) {   // child-process-only code
-      close(sockfd); // child doesn't need the listening socket
-      if (send(new_fd, "Hello, world!", 13, 0) == -1) {
-        perror("send");
-      }
-      close(new_fd); // no longer need the connection socket
-      exit(0);
-    }
-
-    // parent-process-only code
-    close(new_fd); // no longer need the connection socket
-  } // END WHILE
-
-  return 0;
+  // do NOT forget to close the connection sockfd!
+  close(conn_sockfd);
+  exit(EXIT_SUCCESS);
 }

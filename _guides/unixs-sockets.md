@@ -33,36 +33,6 @@ be on Windows, then you can easily adjust the scripts here). It is also assumed
 that you know the basics of Linux (how to use a terminal, how to consult man
 pages, etc.) and are somewhat familiar with C programming.
 
-## Sockets in General
-
-Following the Unix philosophy of *everything is a file*, a socket is essentially
-a file descriptor abstraction that can be written to and read from, like any
-other file using `read()` and `write()`, for the purpose of network
-communication. Consequently, a socket is subject to the usual file permissions.
-A socket represents the local endpoint of a communication path.
-
-There are two types of sockets:
-- [Unix Sockets (or Unix Domain Sockets)](#internet-domain-sockets-(ip-sockets)): are used for
-inter-process communication and are not externally identifiable to other hosts
-outside of the local machine. These are essentially used for communication
-between processes running on the same machine.
-- [IP Sockets (or Internet Sockets)](#unix-sockets): can be used for
-communication with a remote process (think of a process running on your local
-machine and another one very, very far away). IP sockets communications happen
-on top of the TCP/IP communication stack usually using a well known protocol
-(e.g., HTTP for web content).
-
-<figure>
-<img loading="lazy" src="{{"/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" | relative_url }}" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
-<figcaption>
-    IP sockets vs. Unix domain sockets. In <u>Machine A</u>, <u>Process A.0</u>
-    communicates with <u>Process A.1</u> via the pair of its Unix domain socket
-    <u>sock_fd A.0</u> and <u>Process A.1</u>'s <u>sock_fd A.1</u>. On the other
-    hand, <u>Process A.0</u> communicates with the remote <u>Process B.0</u> on
-    the very far away <u>Machine B</u> via TCP/IP.
-</figcaption>
-</figure>
-
 ## Networking Basics
 
 Before delving into sockets programming details, basic networking concepts
@@ -246,7 +216,7 @@ To quote Ron Trunk in [this StackExchange post][tcpip_vs_osi]:
 > 
 > Decoupling: In theory, you can substitute one specific technology for another at
 > the same layer. As long as the layer communicates with the one above and the one
-> below in the same way, it shouldn’t matter how it’s implemented. For example, we
+> below in the same way, it should not matter how it’s implemented. For example, we
 > can remove the very well-known layer 3 protocol, IP version 4, and replace it
 > with IP version 6. Everything else should work exactly the same. To your browser
 > or your cable modem, it should make no difference.
@@ -320,7 +290,37 @@ one way or the other you will come across these abbreviations, a lot.
 |------------------------|----------------------------------------------|
 | **NIC**                | Networking interface card that connects a node to a network |
 
-## Unix Domain Sockets
+## Sockets in General
+
+Following the Unix philosophy of *everything is a file*, a socket is essentially
+a file descriptor abstraction that can be written to and read from, like any
+other file using `read()` and `write()`, for the purpose of network
+communication. Consequently, a socket is subject to the usual file permissions.
+A socket represents the local endpoint of a communication path.
+
+There are two types of sockets:
+- [Unix Sockets (or Unix Domain Sockets)](#internet-domain-sockets-(ip-sockets)): are used for
+inter-process communication and are not externally identifiable to other hosts
+outside of the local machine. These are essentially used for communication
+between processes running on the same machine.
+- [IP Sockets (or Internet Sockets)](#unix-sockets): can be used for
+communication with a remote process (think of a process running on your local
+machine and another one very, very far away). IP sockets communications happen
+on top of the TCP/IP communication stack usually using a well known protocol
+(e.g., HTTP for web content).
+
+<figure>
+<img loading="lazy" src="{{"/assets/svgs/unix_domain_sockets_vs_ip_sockets.svg" | relative_url }}" alt="Diagram demonstrating the difference between IP sockets and Unix domain sockets" />
+<figcaption>
+    IP sockets vs. Unix domain sockets. In <u>Machine A</u>, <u>Process A.0</u>
+    communicates with <u>Process A.1</u> via the pair of its Unix domain socket
+    <u>sock_fd A.0</u> and <u>Process A.1</u>'s <u>sock_fd A.1</u>. On the other
+    hand, <u>Process A.0</u> communicates with the remote <u>Process B.0</u> on
+    the very far away <u>Machine B</u> via TCP/IP.
+</figcaption>
+</figure>
+
+## Connectionless vs. Connection-Oriented Sockets
 
 TODO
 
@@ -341,6 +341,28 @@ client (`simpletcpclient.c`) files where a server waits for a single client to
 connect then waits for it to send one or more messages, prints to stdout and
 sends the message back to the client. The server closes the connection when the
 client does so.
+
+The figure below showcases the socket API calls between the
+soon-to-be-implemented implemented TCP client-server applications in a *fancy*
+diagram:
+
+<figure>
+<img loading="lazy" src="{{ "/assets/svgs/internet_sockets.svg" | relative_url }}" alt="" />
+<figcaption>
+    A typical, blocking, connected (i.e., TCP-based) server-client application.
+    The client process should be run after the server process' <u>listen()</u>
+    call. Notice the red line after the server's <u>accept()</u> call - that
+    is because the socket was set as *blocking* and accept will block until
+    a connection is available in the queue backlog (i.e., until the client
+    calls <u>connect()</u>). The server process closes the *listening socket*
+    once the client connects. The server also blocks on the <u>recv()</u> call
+    to the *connection socket* **conn_sockfd** waiting on the client to send
+    data. The client sends some data and closes the connection exactly after
+    doing <u>send()</u> returns. The server attempts to <u>recv()</u> again but
+    gets an immediate return value of 0 indicating that the client closed the
+    connection. The server then closes the **conn_sockfd**.
+</figcaption>
+</figure>
 
 #### TCP Server Program
 
@@ -524,7 +546,8 @@ int main(void) {
     data_buf[nbytes] = '\0';
 
     // echo the received message
-    printf("[server] received message from client %s: %s", addr_str, data_buf);
+    printf("[server] received message from client %s: %s\n", addr_str,
+           data_buf);
 
     /* now send the data back again to the client
      * send may in fact not send the entirety of your data and it is your
@@ -548,23 +571,28 @@ int main(void) {
    ```bash
    cc -o simplestreamserver simplestreamserver.c
    ```
+
 2. Run the `simplestreamserver` executable in a terminal
+
 3. In another terminal, run:
 
    ```bash
    telnet localhost:3490
    ```
+
 4. In the same terminal type some message, something like: `HEY IDIOT SERVER!`
+
 5. You should see this message echoed back to you
+
 6. To exit the connection and stop the server, type `^]` then `^D` (CTRL + ']'
 then CTRL + 'D')
 
 Congrats! You have written your first C socket API networking program :-).
 
-In more details:
+For TCP server applications (such as the one above), the order of the socket API
+calls is as follows:
 
-1. <u>getaddrinfo()</u> provided a set of hints, gets candidate address
-structures (you should loop through them until a suitable candidate is found):
+1. <u>getaddrinfo()</u>:
 
    ```C
    #include <sys/types.h>
@@ -579,67 +607,241 @@ structures (you should loop through them until a suitable candidate is found):
    void freeaddrinfo(struct addrinfo *res);
    ```
 
-   <u>freeaddrinfo()</u> has to be called to cleanup the allocated <u>res</u>
-   <u>addrinfo</u> structure(s).
+   **DESCRIPTION**
+
+   Fills up candidate address info structures (i.e., a linked
+   list that you should loop through until a suitable candidate is found). This
+   is essentially the modern version to fill a structure describing the socket
+   endpoint in `struct addrinfo`. The fields in this structure will later be
+   used for subsequent socket API system calls. It is recommended to use
+   <u>getaddrinfo()</u> rather than manually filling address structures to write
+   IP-version agnostic programs.
+
+   **PARAMETERS**
+
+   - [in] <u>node</u> -- identifies the host that we want to get address
+   candidates for. If set to NULL alongside setting the **AI_PASSIVE** flag in
+   <u>hints</u>, the filled up addrinfo structures refer to this host (this is
+   usually the way it is called for servers).
+   - [in] <u>service</u> -- the port that identifies the service of the host.
+   - [in] <u>hints</u> -- criteria for selecting the socket address structures
+   (e.g., socket type, domain, etc.).
+   - [out] <u>res</u> -- filled linked list of <u>addrinfo</u> structure
+   containing socket addresses that are suitable for <u>socket()</u> and 
+   <u>bind()</u> calls.
+
+   **RETURN VALUE**
+
+   0 on success. Error code (see man page) on error.
+
+    ---
+
+   `lines [34, 50]`: we 0 initialize the hints struct, we set the `ai_family`
+   (reads (a)ddress(i)nfo (family)) to IPv4 (we can also use IPv6 or set it to
+   *any* using `AF_UNSPEC`). We set the socket type to `SOCK_STREAM` to use TCP.
+   Since this is the server, the usual skeleton is to set the `AI_PASSIVE` flag
+   and to set the <u>node</u> parameter to NULL in <u>getaddrinfo</u>. This
+   combination ensures that created sockets can be bound to **our** (i.e.,
+   the host's) IP address the provided port.
+
+   `lines [51, 100]`: we loop through the created addrinfo linked list structures
+   until we successfully create a *listening socket* and bound it to our IP
+   address the provided port (which, again, are fields of the returned addrinfo
+   struct).
+
+   `lines [101, 115]`: we call <u>freeaddrinfo()</u>to cleanup the allocated
+   <u>res</u> <u>addrinfo</u> structure(s).
+
+    ---
   
 
-2. <u>socket()</u> creates the **listening socket** which is used to listen for
- connection requests from clients. Notice in the code snippet above that there
- are two sockets - one for listening to connections and one for sending and
- receiving data from the connected client:
+1. <u>socket()</u>:
 
    ```C
+   #include <sys/socket.h>
+
    int socket(int domain, int type, int protocol);
    ```
 
-3. <u>bind()</u> specifies the address and port of local side of the connection:
+   **DESCRIPTION**
+
+   Creates a socket which can be used to listen for connection
+   requests from clients (in this example, this is a TCP server, i.e., a
+   connection-oriented protocol so this call is used to create a *listening
+   socket*).
+
+   **PARAMETERS**
+
+   - [in] <u>domain</u> -- socket domain (e.g., **AF_UNIX** for Unix domain
+   sockets communication or **AF_INET** for IPv4 Internet sockets communication
+   etc.) See the man page for the full list.
+   - [in] <u>type</u> -- socket type (e.g., **SOCK_DGRAM**, **SOCK_STREAM**,
+   etc.) See the man page for the full list.
+   - [in] <u>protocol</u> -- 
+
+   **RETURN VALUE**
+
+   \>0 socket communication endpoint file descriptor on success. -1 or error and
+   <u>errno</u> is set.
+
+    ---
+
+   Notice that there is also (`conn_sockfd`) for a *connection socket* which is
+   the socket used to communication with a client who has established a
+   connection with the server. Notice, however, that this socket is not created
+   by a call to <u>socket()</u> but rather <u>accept()</u>.
+
+    ---
+
+1. <u>bind()</u>:
 
    ```C
+   #include <sys/socket.h>
+
    int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
    ```
 
-   On the server side, since clients initiate the connection, the
-   port has to be explicitly set and has to be "well-known" (or "agreed-upon")
-   so that the client can connect to the server. Therefore <u>bind()</u> has to
-   be called.
+   **DESCRIPTION**
 
-   On the client side, it is not necessary to call bind as the OS
-   will automatically assign an available port number upon <u>connect()</u>.
-   Since the client is the side that initiate the connection, its
-   *implicitly* set port will be sent to the server and the server will
-   know how to reach the client (think about it - the server's endpoint has to
-   be known beforehand so that the client can connect to it!).
+   Specifies the address and port of the local side of the connection. On the
+   server side, since clients initiate the connection, **the port has to be
+   explicitly set and has to be "well-known" (or "agreed-upon") so that the
+   client can connect to the server**. Therefore <u>bind()</u> has to be called.
 
-4. <u>listen()</u> starts listening for connections. After calling this, the
-potential client applications can initiate a connection request to the server.
+   On the client side, it is not necessary to call bind as the OS will
+   automatically assign an available port number upon <u>connect()</u> (remember
+   that a TCP/UDP communication identifies the two endpoints of the
+   communication using (IP, PORT) pairs). Since the client is the side that
+   initiate the connection, its *implicitly* set port will be sent to the server
+   and the server will know how to reach the client back (think about it - the
+   server's endpoint has to be known beforehand so that the client can connect
+   to it!).
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- a connection-oriented socket file descriptor.
+   - [in] <u>addr</u> -- pointer to an address to which the socket
+   <u>sockfd</u> will be bound
+   - [in] <u>addrlen</u> -- size in bytes of the structure pointed to by
+   <u>addr</u>
+
+   **RETURN VALUE**
+
+   0 on success. -1 or error and <u>errno</u> is set.
+
+    ---
+
+1. <u>listen()</u>:
 
    ```C
+   #include <sys/socket.h>
+
    int listen(int sockfd, int backlog);
    ```
-   
-   <u>backlog</u> is simply the maximum number of pending requests that can be
-   put in the queue (for the non-English native speakers there, backlog is an
-   accumulation of uncompleted work or matters needing to be dealt with).
-   
-   To be more precise, <u>listen()</u> marks the socket as a *passive socket*
-   that will be used to accept incoming connection requests using
-   <u>accept()</u>.
 
-5. <u>accept()</u> is used with connection-based sockets (e.g., **SOCK_STREAM**)
-to extract the first connection request from the backlog queue. A new socket
-for communicating with the client is create and returned - such socket is
-usually referred as a **connection socket**. Accept is blocking (unless the
-sockfd is adjusted to a non-blocking socket).
+   **DESCRIPTION**
+
+   Starts listening for connection requests. After calling this, the potential
+   client applications can initiate a connection request to the server. To be
+   more precise, <u>listen()</u> marks the socket as a *passive socket* that
+   will be used to accept incoming connection requests using <u>accept()</u>.
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- a connection-oriented socket file descriptor.
+   - [in] <u>backlog</u> -- the maximum number of pending requests that can be
+   put in the queue (for the non-English native speakers there, backlog is an
+   accumulation of uncompleted work or matters needing to be dealt with). This
+   is NOT the maximum number of connection requests the socket can accept.
+
+   **RETURN VALUE**
+
+   0 on success. -1 or error and <u>errno</u> is set.
+
+    ---
+
+   `lines [116, 123]` -- <u>listen()</u> is called on the listening sockets and
+   error checking is performed.
+
+    ---
+
+1. <u>accept()</u>:
 
    ```C
+   #include <sys/socket.h>
+
    int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
    ```
 
-6. <u>send()</u> and <u>recv()</u> are used to handle requests and send
- responses to the client through the newly created **connection socket**
- (depending on the number of connections the server is expected to concurrently
- handle, we might spawn a new process/thread or we might use an event-driven,
- worker-based model):
+   **DESCRIPTION**
+
+   Used with connection-based sockets (e.g., **SOCK_STREAM**) to extract the
+   first connection request from the backlog queue. A new socket for
+   communicating with the client is create and returned - such socket is usually
+   referred as a **connection socket**. <u>accept</u> is blocking (unless the
+   sockfd is adjusted to a non-blocking socket).
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u>: a listening socket file descriptor.
+   - [out] <u>addr</u>: filled with the address of the peer (e.g., client)
+   socket. Can be set to NULL - in which case <u>addrlen</u> should also be set
+   to NULL.
+   - [inout] <u>addrlen</u>: if <u>addr</u> != NULL, should be initialized to
+   the size of the <u>addr</u> pointed to structure. On return, will contain
+   the actual size of the <u>addr</u> struct.
+
+   **RETURN VALUE**
+
+   \> 0 connection socket file descriptor on success. -1 on error and
+   <u>errno</u> is set.
+
+    ---
+
+   `lines [124, 132]`: <u>accept()</u> is called and blocks (i.e., *sleep*) the
+   main thread until a connection is available in the backlog. `conn_sockfd` is
+   the *connection socket* that will be used to communicate with the just
+   connected-to client.
+
+    ---
+
+1. <u>recv()</u>:
+
+   ```C
+   #include <sys/socket.h>
+
+   ssize_t recv(int sockfd, void buf[.len], size_t len, int flags);
+   ```
+
+   **DESCRIPTION**
+
+   Receives message from a connection socket <u>sockfd</u> to a client.
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- the connection socket file descriptor through which 
+   data is received
+   - [out] <u>buf</u> -- buffer into which the received data is filled
+   - [in] <u>len</u> -- maximum number of bytes to receive (could receive less)
+   - [in] <u>flags</u> -- OR-ed set of flags - setting this to 0 is equivalent
+   to a call to <u>read()</u>
+
+   **RETURN VALUE**
+
+   On success, returns the number of bytes received which might be less than
+   <u>len</u>. 0 is EOF (socket peer has closed). -1 is returned on failure and
+   <u>errno</u> is set.
+
+    ---
+
+   Depending on the number of connections the server is expected to concurrently
+   handle, we might spawn a new process/thread or we might use an event-driven,
+   worker-based model (we will discuss this later on - just hold your enthusiasm
+   :-D).
+
+    ---
+
+1. <u>send()</u>:
 
    ```C
    #include <sys/socket.h>
@@ -647,12 +849,36 @@ sockfd is adjusted to a non-blocking socket).
    ssize_t send(int sockfd, const void buf[.len], size_t len, int flags);
    ```
 
-   **RETURN VALUE**: on success, send returns the number of bytes sent which
-   might be less than <u>len</u>. -1 is returned on failure and <u>errno</u>
-   is set.
+   **DESCRIPTION**
 
-7. <u>close()</u> is used to close the **connection socket** upon, for instance,
-client connection closure (when <u>recv</u> returns 0):
+
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- the connection socket file descriptor through which 
+   data is sent.
+   - [in] <u>buf</u> -- data buffer from which up to <u>len</u> bytes will be
+   sent.
+   - [in] <u>len</u> -- maximum number of bytes to send (could send less).
+   - [in] <u>flags</u> -- OR-ed set of flags - setting this to 0 is equivalent
+   to a call to <u>write()</u>
+
+   **RETURN VALUE**
+
+   On success, returns the number of bytes sent which might be less than
+   <u>len</u>. -1 is returned on failure and <u>errno</u> is set.
+
+    ---
+
+   It is important to note that <u>send()</u> may not send the entire data you
+   requested it to send. There could be multiple causes for this, e.g., the 
+   MTU size limit, or any of the underlying protocol packet size limitations --
+   for instance, TCP has *congestion control* where the size of packet to send
+   is affected by how congested the network is.
+
+    ---
+
+1. <u>close()</u>:
 
    ```C
    #include <unistd.h>
@@ -660,12 +886,23 @@ client connection closure (when <u>recv</u> returns 0):
    int close(int fd);
    ```
 
-8. go to 5.) and repeat
+   **DESCRIPTION**: closes the file descriptor (in the context of network
+   programming, closes the socket file descriptor and the connection it
+   represents).
+
+   **PARAMETERS**:
+    - [in] <u>fd</u>: file descriptor to close
+
+   **RETURNS**: 0 on success. -1 on error and <u>errno</u> is set.
+
+After being introduced to these system calls, make sure to go back to the code
+above and read the comments since they explain a couple of omitted details.
 
 It should be noted however that this is not exactly the optimal way to employ
 a server that is expected to connect with multiple clients (as is usually the
-case for most applications). Certain socket API calls are blocking (e.g., accept()).
-We will see later on a snippet for how a non-blocking server is usually implemented.
+case for most applications). Certain socket API calls are blocking (e.g.,
+<u>accept()</u>). We will see later on a snippet for how a non-blocking server
+is usually implemented.
 
 #### TCP Client Program
 
@@ -673,41 +910,756 @@ Usually client programs initiate a network connection with some server
 to request services. Clients also usually terminate such connections.
 Often, a client is activated by a user (e.g., opening a web page in a
 browser tab) and is disabled automatically or when the user explicitly
-deactivates it (e.g., closing a web page by closing its browser tab).
-
-The usual Sockets API calls to perform in a client program are as follows:
-
-- <u>connect()</u> has the same signature as <u>bind()</u> and specifies
- the address and port of remote side of the connection
-    ```C
-    int connect(int sockfd, const struct sockaddr *addr,
-        socklen_t addrlen);
-    ```
+requests so (e.g., closing a web page by closing its browser tab).
 
 
-#### Overview
+{% highlight c linenos %}
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-The figure below showcases the socket API calls between the previously
-implemented TCP client-server applications in a *fancy* diagram:
+#define MAXDATASIZE 4096 // max number of bytes we can get/send at once
 
-<figure>
-<img loading="lazy" src="{{ "/assets/svgs/internet_sockets.svg" | relative_url }}" alt="" />
-<figcaption>
-    A typical, blocking, connected (i.e., TCP-based) server-client application.
-    The client process should be run after the server process' <u>listen()</u>
-    call. Notice the red line after the server's <u>accept()</u> call - that
-    is because the socket was set as *blocking* and accept will block until
-    a connection is available in the queue backlog (i.e., until the client
-    calls <u>connect()</u>). The server process closes the *listening socket*
-    once the client connects. The server also blocks on the <u>recv()</u> call
-    to the *connection socket* **conn_sockfd** waiting on the client to send
-    data. The client sends some data and closes the connection exactly after
-    doing <u>send()</u> returns. The server attempts to <u>recv()</u> again but
-    gets an immediate return value of 0 indicating that the client closed the
-    connection. The server then closes the **conn_sockfd**.
-</figcaption>
-</figure>
+void *get_in_addr(const struct sockaddr *sa) {
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in *)sa)->sin_addr);
+  }
+  return &(((struct sockaddr_in6 *)sa)->sin6_addr);
+}
+
+int main(int argc, char *argv[]) {
+  int sockfd; /* socket file descriptor used to send/receive data */
+  struct addrinfo hints, *servinfo, *p;
+  int num_bytes;                   /* number of bytes sent/received */
+  char addr_str[INET6_ADDRSTRLEN]; /* holds IP address string representation */
+  char buf[MAXDATASIZE];
+  int rv; /* holds return value of system calls - ALWAYS check for errors! */
+
+  if (argc != 3) {
+    fprintf(stderr, "usage: simplestreamclient HOSTNAME PORT\n");
+    exit(1);
+  }
+
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  /* get socket address info structures that we can connect to for the provided
+   * host IP and service (i.e., port). Each returned address info structure
+   * represents a potential socket that we can connect to (using connect()). */
+  if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    exit(EXIT_FAILURE);
+  }
+
+  /* loop through the linked list res until we have successfully created the
+   * socket and connected it */
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
+      perror("[client] socket");
+      continue;
+    }
+
+    /* this function reads: inet network to presentation. It converts a given
+     * address (IPv4 or IPv6) into a string representation */
+    inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
+              addr_str, sizeof addr_str);
+
+    printf("[client] attempting connection to %s ...\n", addr_str);
+    rv = connect(sockfd, p->ai_addr, p->ai_addrlen);
+    if (rv == 0)
+      break; /* success */
+
+    perror("[client] connect");
+    close(sockfd);
+
+  } // END FOR LOOP
+
+  if (p == NULL) {
+    fprintf(stderr, "[client] failed to connect\n");
+    exit(EXIT_FAILURE);
+  }
+
+  inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr), addr_str,
+            sizeof addr_str);
+  printf("[client] connected to %s\n", addr_str);
+
+  /* remember to call this to avoid a memory leak! freeaddrinfo frees the
+   * linked list but does NOT NULL assign the struct's ai_next pointers */
+  freeaddrinfo(servinfo);
+
+  /* prompts the user for a message to send to the server */
+  printf("what to send to the server?\n");
+  fgets(buf, sizeof(buf), stdin);
+  long msg_len = strlen(buf);
+  /* remove newline character */
+  if (buf[msg_len - 1] == '\n') {
+    buf[msg_len - 1] = '\0';
+    --msg_len;
+  }
+
+  /* we send the prompted message to the server */
+  num_bytes = send(sockfd, buf, msg_len, 0);
+  if (num_bytes == -1) {
+    perror("send");
+    exit(EXIT_FAILURE);
+  }
+
+  /* print the just-sent message */
+  buf[num_bytes] = '\0'; // send() could have sent less than what is requested
+  printf("[client] sent '%s'\n", buf);
+
+  /* wait (i.e., block) until we receive a message from the server or the
+   * until the server closes the connection */
+  if ((num_bytes = recv(sockfd, buf, sizeof(buf) - 1, 0)) == -1) {
+    perror("recv");
+    exit(EXIT_FAILURE);
+  }
+
+  // be absolutely sure that received string from server is null terminated
+  buf[num_bytes] = '\0';
+  printf("[client] received '%s'\n", buf);
+
+  // do NOT forget to close the connected sockfd!
+  close(sockfd);
+
+  exit(EXIT_SUCCESS);
+}
+{% endhighlight %}
+
+1. Copy this code into a `simplestreamclient.c` file and compile it:
+
+   ```bash
+   cc -o simplestreamclient simplestreamclient.c
+   ```
+
+1. Run the previous `simplestreamserver` in a different terminal
+
+1. Run the `simplestreamclient` executable in a terminal (after you have run
+the server application):
+
+   ```bash
+   simplestreamclient localhost 3490
+   ```
+
+1. You will be prompted for a message to send, just type anything short.
+
+
+1. You should see this message printed in the server terminal and echoed back
+to you
+
+
+For TCP client applications (such as the one above), the order of the socket API
+calls is as follows (already mentioned calls in the server application will not
+be re-explained):
+
+1. <u>getaddrinfo()</u>
+
+   In client applications, this is used to fill up an <u>addrinfo</u> structure
+   of the remote side of a connection.
+
+1. <u>socket()</u>
+
+   `lines [48 - 58]` -- we create a socket 
+
+1. <u>connect()</u>:
+
+   ```C
+   int connect(int sockfd, const struct sockaddr *addr,
+       socklen_t addrlen);
+   ```
+
+   **DESCRIPTION**
+
+   Has the same signature as <u>bind()</u> and specifies the address and port of
+   *remote* side of the connection.
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- a connection-oriented socket file descriptor.
+   - [in] <u>addr</u> -- pointer to an address to which the socket
+   <u>sockfd</u> will be bound
+   - [in] <u>addrlen</u> -- size in bytes of the structure pointed to by
+   <u>addr</u>
+
+   **RETURN VALUE**
+
+   0 on success. -1 on error and <u>errno</u> is set.
+
+    ---
+
+   The keyword to remember here is *remote* -- since this is the client side
+   application, we have to specify which remote machine we want to connect to.
+   The remote (and local) part is identified by the (address, port) pair.
+
+   It is crucial to mention again, that in order to send and receive messages
+   using a socket, a local and host (address, port) pairs have to be specified.
+
+   You might ask here where did we specify the local (address, port) in this
+   code -- well, we did not, but we could have done so by calling <u>bind()</u>
+   explicitly. In this case, the OS simply assigned us a random, available port
+   (see server output in terminal to notice the randomly assigned port of the
+   client).
+
+### Socket Helpers Library
+
+There are a couple of functions that we will almost always use in any networking
+program therefore it makes sense to reduce repeatability by factoring some code
+into a C library we call `socketshelpers.h` and `socketshelpers.c`.
+
+For the moment, factor the `get_addr_struct` and `get_port` functions into
+the `sockethelpers.h`:
+
+{% highlight c linenos %}
+#ifndef SOCKET_HELPERS_H
+#define SOCKET_HELPERS_H
+
+#include <netinet/in.h>
+#include <sys/socket.h>
+
+// returns sockaddr struct from provided sockaddr in IPv4 or IPv6.
+static inline void *get_addr_struct(const struct sockaddr *sa) {
+  return sa->sa_family == AF_INET
+             ? (void *)(&(((struct sockaddr_in *)sa)->sin_addr))
+             : (void *)(&(((struct sockaddr_in6 *)sa)->sin6_addr));
+}
+
+// returns port from given sockaddr in IPv4 or IPv6.
+static inline in_port_t get_port(const struct sockaddr *sa) {
+  return sa->sa_family == AF_INET ? ((struct sockaddr_in *)sa)->sin_port
+                                  : ((struct sockaddr_in6 *)sa)->sin6_port;
+}
+
+#endif
+{% endhighlight %}
+
+Throughout this guide we will add additional functions to the aforementioned
+library.
 
 ### Simple UDP Server-Client Application
 
+### Networking I/O Modes
+
+In the previous TCP and UDP simple applications, calls to <u>accept()</u> and
+<u>recv()</u> were *blocking* -- the main thread had to wait (i.e., sleep) some
+time until the data required by the socket API call arrives.
+
+This may not sound problematic in our previous, very simple applications but, in
+the real world, large number of clients establish connections with a single server
+(think of something like tens of thousands up to potentially millions). For each
+connection, communication is established via a **connection socket**. The server
+would be practically useless if it had to block on, for example, each
+<u>recv</u> call (think about it for a moment - we wouldn't even be able to
+practically handle more than one client.).
+
+It is important to note that there are numerous approaches to handling a large
+number of client connections. These approaches will be discussed in
+[The C10K Problem][#the-c10k-problem] section.
+
+For the moment, assume the following: you only have one thread and you want to
+handle multiple client connections, how can you do that if you use blocking
+sockets?
+
+#### Synchronous I/O Multiplexing
+
+Another reasonable answer is: use *I/O multiplexing* or, for the sake of
+briefness, the system call <u>poll()</u> (or <u>epoll</u>). Beware that many
+online articles completely confuse the terminology -- *I/O multiplexing* is NOT
+*non-blocking I/O* nor is it *asynchronous I/O*.
+
+Notice the *I/O* part in *I/O Multiplexing*? -- yes, the use-cases for this
+are not limited to network programming.
+
+Now, let's take a look at the signature of <u>poll()</u> and the usual code
+skeleton that invokes it:
+
+- <u>poll()</u>:
+
+   ```C
+   #include <poll.h>
+
+   int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+   ```
+
+   **DESCRIPTION**
+
+   waits (or blocks, or sleeps) for provided events (<u>fds[i].events</u>) on a
+   set of provided file descriptors (<u>fds[i].fd</u>). Returns once at least
+   one file descriptor's event has occured (e.g., if `fds[i].events` was set to
+   `POLLIN` then <u>poll()</u> returns when that file descriptor has data that
+   is available for reading).
+
+   **PARAMETERS**
+
+   - [inout] <u>fds</u> -- array of <u>struct pollfd</u> file descriptors:
+      ```C
+      struct pollfd {
+        int   fd;         /* file descriptor */
+        short events;     /* requested events */
+        short revents;    /* returned events */
+      };
+      ```
+      - [in] <u>fd</u> -- file descriptor for an open file (or set to <0 to be
+      ignored).
+      - [in] <u>events</u> -- OR-ed set of events that we <u>poll()</u> to watch
+      for for this file descriptor and to wake up on. E.g., `POLLIN` for data
+      availability for reading (see man page for full list).
+      - [out] <u>revents</u> -- bitmask filled by the kernel indicating which
+      event(s) <u>poll()</u> woke up on.
+
+
+   - [in] <u>nfds</u> -- <u>fds</u> array length (or less if you want to ignore
+   some fds).
+   - [in] <u>timeout</u> -- milliseconds that <u>poll()</u> should block waiting
+   for an event on the provided set of <u>fds</u> to occur. Set to any negative
+   number for infinite timeout.
+
+   **RETURN VALUE**
+
+   >0 number of elements in <u>fds</u> whose <u>revents</u> field has been set
+   to !=0 value. -1 on error and <u>errno</u> is set.
+
+    ---
+
+The usual skeleton for using <u>poll()</u> is as follows (try to just read
+understand the overall idea and approach here -- we will implement a full
+example later on :-)):
+
+{% highlight c linenos %}
+struct pollfd *pfds; /* array of pollfd structs - will be passed to poll */
+nfds_t fds_count;  /* number of sockets - nfds_t is just an unsigned long int */
+pfds = calloc(fds_count, sizeof(struct pollfds));
+if (pfds == NULL) {
+  perror("calloc");
+  exit(EXIT_FAILURE);
+}
+
+/* set the socket fds and the events that you want poll to be woken up on */
+for (nfds_t i = 0; i < fds_count; ++i) {
+  pfds[i].fd = -1; /* set to a listening/connection socket */
+  pfds[i].events = POLLIN; /* wake up when data is available to be read */
+}
+
+/* as long as there is atleast one open socket, keep colling poll */
+while (num_open_sockfds > 0) {
+
+  /* this blocks until one or more sockets are ready (i.e., instant return
+  upon call) for the specified operation */
+  int poll_count = poll(pfds, fds_count, -1 /* infinite timeout */);
+
+  if (poll_count == -1) {
+      perror("poll");
+      exit(EXIT_FAILURE);
+  }
+
+  /* loop through poll_count */
+  for (int j = 0; j < fds_count; ++j) {
+    /* filter socket fds that have no pending data in them */
+    if (!(pfds[j].revents != 0))
+      continue;
+
+    /* this checks if data is available for read */
+    if (pfds[j].revents & POLLIN) {
+        /* read data and print it or whatever */
+    } else { /* (POLLHUP | POLLERR) - client hang up or some error happened */
+      /* close the corresponding connection socket fd */
+      if (close(pfds[j].fd) == -1) {
+          perror("close");
+          exit(EXIT_FAILURE);
+      }
+      --num_open_sockfds;
+    }
+
+    /*  */
+  }
+}
+{% endhighlight %}
+
+It is important to note that this code is still *blocking* -- it blocks on
+the <u>poll()</u> socket API call. The difference is, however, that we are not
+blocking on a particular socket but rather on a whole set of sockets until at
+least one of them has available data (or any other event depending on what you
+set for the `events` field). The socket whose events' field is not null and
+has the bitmask, for instance, `POLLIN` set is guranteed to instantly return
+upon a call to `recv()`.
+
+Now let's write a multi chat room application where multiple clients could
+connect to the same server and send messages to it. Upon reception of a message,
+the server sends it back to all other clients. We will only write the server
+program since we can simply just use `telnet` for the clients.
+
+The creation of a listening socket through which connections are accepted is
+a common step in every(?) TCP server. We will refactor it into the
+`sockethelpers` library that we have previously created. In the previously
+created `sockethelpers.h`add the following function declaration:
+
+{% highlight c linenos %}
+/* returns listening socket file descriptor on success and -1 on failure */
+int create_listening_socket(const char *port, int backlog);
+{% endhighlight %}
+
+
+Now create an implementation file for the library and name it `sockethelpers.c`
+and copy/write the implementation of `create_listening_socket` into it:
+
+{% highlight c linenos %}
+#include "sockethelpers.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+/* Creates a listening socket that can be used to accept connection requests.
+ * Returns the created listening socket fd. -1 on error. */
+int create_listening_socket(const char *port, int backlog) {
+  int sfd;
+  int rv;
+  struct addrinfo hints, *servinfo, *p;
+
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET;
+  hints.ai_socktype = SOCK_STREAM;
+  hints.ai_flags = AI_PASSIVE;
+
+  if (getaddrinfo(NULL, port, &hints, &servinfo) != 0) {
+    perror("getaddrinfo");
+    return -1;
+  }
+
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    sfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    if (sfd == -1)
+      continue;
+
+    /* running this server multiple times, in succession, with small delay
+     * can cause the "Address already in use" error. Very briefly, the TCP
+     * socket was left in a TIME_WAIT state - which by default could cause
+     * an error when a reuse attempt of the socket is made. To "fix" this,
+     * we set the REUSEADDR socket layer option (if you really want to get
+     * an idea why I put fix between quotes then read this absolutely
+     * gorgeous article here:
+     *
+     * https://vincent.bernat.ch/en/blog/2014-tcp-time-wait-state-linux)
+     */
+    int y = 1;
+    if (setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &y, sizeof(int)) == -1) {
+      close(sfd);
+      perror("setsockopt");
+      continue;
+    }
+
+    if (bind(sfd, p->ai_addr, p->ai_addrlen) == 0)
+      break; /* success */
+
+    close(sfd);
+    perror("bind");
+  }
+
+  freeaddrinfo(servinfo);
+
+  if (p == NULL) {
+    return -1;
+  }
+
+  if (listen(sfd, backlog) == -1) {
+    close(sfd);
+    perror("listen");
+    return -1;
+  }
+
+  return sfd;
+}
+{% endhighlight %}
+
+Now create a new `multichatserver.c` file and copy the following write/code into
+it (as usual - pay attention to the comments and the general skeleton
+surrounding <u>poll</u>):
+
+
+{% highlight c linenos %}
+#include "sockethelpers.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <poll.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define MAX_CLIENT_MSG_LENGTH 256
+
+/* Sends a message to all recipients in provided pfds set except to the
+ * except_fd and listener_fd sockets. */
+void broadcast_msg(const struct pollfd *pfds, int fd_count, const char *buf,
+                   size_t buf_len, int listener_fd, int except_fd) {
+  for (int i = 0; i < fd_count; ++i) { /* send the message to all others */
+    int dest_fd = pfds[i].fd;
+    if (dest_fd != listener_fd &&
+        dest_fd != except_fd /* without this an inifinte loop occurs */) {
+      if (send(dest_fd, buf, buf_len, 0) == -1) {
+        perror("send");
+      }
+    }
+  }
+
+  /* and print the sent message to this server's stdout */
+  printf("%s", buf);
+}
+
+/* Add a new entry to pfds with POLLIN bit set in events and re-allocates if
+ * necessary. */
+void add_to_pfds(struct pollfd **pfds, nfds_t *pfds_count,
+                 nfds_t *pfds_capacity, int newfd) {
+  if (*pfds_count == *pfds_capacity) { /* no more space left - reallocation */
+    *pfds_capacity *= 2;               /* double the capacity */
+    *pfds = (struct pollfd *)reallocarray(*pfds, (*pfds_capacity),
+                                          sizeof(struct pollfd));
+  }
+  (*pfds)[*pfds_count].fd = newfd;
+  (*pfds)[*pfds_count].events = POLLIN;
+  (*pfds)[*pfds_count].revents = 0; /* make sure to 0 initialize this because it
+ could be that add_to_pfds is called within a loop over pfds */
+  ++(*pfds_count);
+}
+
+/* Closes and replace the socket fd at provided index from the pfds array
+ * with the last element. */
+void del_from_pfds(struct pollfd *pfds, nfds_t *pfds_count, int *idx) {
+  close(pfds[*idx].fd);
+  pfds[*idx] =
+      pfds[*pfds_count - 1]; /* now idx holds the previously-last elem */
+  --(*pfds_count);
+  --(*idx);
+}
+
+/* Handles a new connection by calling accept, performing error checks, and
+ * adding the new connected socket (client) to pfds. */
+void handle_new_connection(struct pollfd **pfds, nfds_t *pfds_count,
+                           nfds_t *pfds_capacity, int listenerfd) {
+  struct sockaddr_storage remoteaddr;
+  socklen_t addrlen;
+  int newfd;
+  char remoteIP[INET6_ADDRSTRLEN];
+
+  addrlen = sizeof remoteaddr;
+  newfd = accept(listenerfd, (struct sockaddr *)&remoteaddr, &addrlen);
+  if (newfd == -1) {
+    perror("accept");
+  } else {
+    add_to_pfds(pfds, pfds_count, pfds_capacity, newfd);
+    /* broadcast to all clients (except the new client itself) that a new user
+     * has joined the chat room */
+    char msg_buf[256];
+    snprintf(msg_buf, sizeof(msg_buf), "user %d joined the chat room\n", newfd);
+    broadcast_msg(*pfds, *pfds_count, msg_buf, strlen(msg_buf) + 1, listenerfd,
+                  newfd);
+  }
+}
+
+/* Handles the client data which amounts to either receiving a message and
+ * broadcasting it to other clients or hang up in which case the client's socket
+ * fd is removed from the pfds list, fd_count is decremented, and the index
+ * is decremented so that ++idx is where the potentially calling loop should
+ * resume from.
+ */
+void handle_client_data(struct pollfd *pfds, nfds_t *pfds_count,
+                        int listener_fd, int *idx) {
+  char buf[MAX_CLIENT_MSG_LENGTH];
+  int sender_fd = pfds[*idx].fd;
+  int nbytes = recv(sender_fd, buf, sizeof(buf), 0);
+
+  if (nbytes <= 0) {   /* error or connection closed */
+    if (nbytes != 0) { /* error */
+      perror("recv");
+    }
+
+    del_from_pfds(pfds, pfds_count, idx);
+
+    /* broadcast to all clients that this user disconnected */
+    char msg_buf[256];
+    snprintf(msg_buf, sizeof(msg_buf), "user %d disconnected\n", sender_fd);
+    broadcast_msg(pfds, *pfds_count, msg_buf, strlen(msg_buf) + 1, listener_fd,
+                  -1);
+    return;
+  }
+
+  /* since this is a messaging up - expected data is a set of messages (i.e.,
+   * null terminmated char buffers - thus you have to absolutely sure to set
+   * the null termination character! */
+  buf[nbytes] = '\0';
+
+  /* broadcast what this user sent to all other clients */
+  char msg_buf[32 + MAX_CLIENT_MSG_LENGTH]; /* "user %d: " max length is
+                                               assmumed to be <= 32 */
+  snprintf(msg_buf, sizeof(msg_buf), "user %d: %s", sender_fd, buf);
+  broadcast_msg(pfds, *pfds_count, msg_buf, strlen(msg_buf) + 1, listener_fd,
+                sender_fd);
+}
+
+int main(int argc, char *argv[]) {
+  /* usual arguments checking (of course you should not do this in production
+   * code and you should use something like getopt) */
+  if (argc != 3) {
+    printf("Usage: %s PORT MAX_ROOM_SIZE\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  int list_sockfd;
+  char *port = argv[1];
+  struct pollfd *pfds;   /* array of pollfd structs - will be passed to poll */
+  nfds_t pfds_count = 0; /* count of elements in pfds */
+  nfds_t pfds_capacity =
+      strtol(argv[2], NULL, 10) +
+      1; /* capacity of pfds - +1 because we don't want the user to count the
+            listening socket with the maximum chat room capacity */
+  pfds = (struct pollfd *)calloc(pfds_capacity, sizeof(struct pollfd));
+  if (pfds == NULL) {
+    perror("calloc");
+    exit(EXIT_FAILURE);
+  }
+
+  /* create the listening socket */
+  list_sockfd = create_listening_socket(port, 512);
+  if (list_sockfd == -1) {
+    perror("create_listening_socket");
+    exit(EXIT_FAILURE);
+  }
+
+  /* don't forget to put the listening socket into the pfds array */
+  add_to_pfds(&pfds, &pfds_count, &pfds_capacity, list_sockfd);
+
+  puts("started the main poll loop");
+
+  /* poll loop, poll-ing loop, main loop, or whatever you want to call it */
+  for (;;) {
+
+    /* this blocks until one or more sockets are ready (i.e., instant return
+    upon call) for the specified operation */
+    int poll_count = poll(pfds, pfds_count, -1 /* infinite timeout */);
+    if (poll_count == -1) {
+      perror("poll");
+      exit(EXIT_FAILURE);
+    }
+
+    /* loop through pfds */
+    for (int j = 0; j < pfds_count; ++j) {
+
+      /* filter socket fds that have no pending data in them. poll sets the
+       * revents field to !=0 value for fds for which an event (or more)
+       * occured. */
+      if (pfds[j].revents == 0)
+        continue;
+
+      /* data is available for reading or client hang up */
+      if (pfds[j].revents & (POLLIN | POLLHUP)) {
+
+        /* if this the listening socket fd then we have a new connection */
+        if (pfds[j].fd == list_sockfd) {
+          handle_new_connection(&pfds, &pfds_count, &pfds_capacity,
+                                list_sockfd);
+        } else { /* either got a message from this client or it has closed the
+                    connection */
+          handle_client_data(pfds, &pfds_count, list_sockfd, &j);
+        }
+
+      } else { /* (POLLERR) - some error happened */
+
+        /* delete and close the corresponding connection socket fd */
+        char msg_buf[256];
+        snprintf(msg_buf, sizeof(msg_buf),
+                 "client %d disconnected due to error", pfds[j].fd);
+        broadcast_msg(pfds, pfds_count, msg_buf, strlen(msg_buf) + 1,
+                      list_sockfd, pfds[j].fd);
+
+        /* remember that this decrements the index j - so put it after
+         * broadcasting the msg */
+        del_from_pfds(pfds, &pfds_count, &j);
+      }
+
+    } // END PFDS FOR LOOP
+
+  } // END MAIN FOR LOOP
+}
+{% endhighlight %}
+
+1. To compile the multichatserver application, run:
+
+   ```bash
+   cc -o multiserverchat multiserverchat.c sockethelpers.c
+   ```
+
+1. Run the `multiserverchat` executable in a terminal:
+
+   ```bash
+   ./multiserverchat 9040 256
+   ```
+
+1. In multiple other terminals (well, less than 256 for sure :D), run:
+
+   ```bash
+   telnet localhost 9040
+   ```
+
+1. Write messages in each terminal and see other terminals receiving it. Try
+exiting some terminals to see the "user X disconnected" messages.
+
+Congrats, you have created a trivial non-secure WhatsApp clone but without the
+active urge to collect all of your data :-D (not that I think WhatsApp is
+*secure* per see).
+
+Hopefully this demonstrates the usefullness of <u>poll()</u> in managing
+multiple connections whiting a single threaded application (i.e., without
+instantiating other threads).
+
+But what's the benefit? - This seems to overly complicate things relative to
+just using non-blocking I/O. You probably have not asked this question, but
+assume you did, and assume you want to know the answer :-D.
+
+Non-blocking sockets model requires *active polling* - the act of actively and
+constantly checking whether each socket has some new data (or whatever other
+event you care about). This hogs up the CPU because for **every single timestamp
+in the lifespan of the server process, the main thread is executing some
+instruction and is not sleeping**.
+
+##### Poll vs. Select
+
+There is also the <u>select()</u> call, but there is not anything that it does
+that <u>poll()</u> cannot do. It also seems to be harder to use therefore I
+avoid mentioning it in this guide (not to mention that it has a hard limit
+on the number of file descriptors, i.e., connections, it can monitor -- which
+is 1024 -- a low limit for modern applications).
+
+##### Poll vs. Epoll
+
+#### One Thread Per Connection Model
+
+### The C10K Problem
+
+### The C10M Problem
+
+TODO: this is only discussed
+
+### Advanced TCP Multi-Chat Server-Client Application
+
+## Unix Domain Sockets
+
+TODO
+
 [tcpip_vs_osi]: https://networkengineering.stackexchange.com/questions/6380/osi-model-and-networking-protocols-relationship?noredirect=1&lq=1
+[computer_networks_a_systems_approach]: https://book.systemsapproach.org/index.html
+[c10m]: https://highscalability.com/the-secret-to-10-million-concurrent-connections-the-kernel-i
+[io_modes]: https://notes.shichao.io/unp/ch6/
