@@ -2,6 +2,7 @@
 title: /about
 layout: home
 permalink: /
+add_no_ai_banner: true
 ---
 
 * Do not remove this line (it will not be displayed)

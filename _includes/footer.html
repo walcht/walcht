@@ -1,3 +1,6 @@
 <footer>
-  {{ site.footer }}
+  <div class="copyright">© Copyright 2025 Walid Chtioui</div>
+  {%- if page.show_edit_source == true -%}
+  <div class="edit-source-code">Edit/Contribute to <a href="{{ site.hosted_at | append: page.path }}">source</a></div>
+  {%- endif -%}
 </footer>

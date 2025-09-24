@@ -2,6 +2,8 @@
 title: Brief Introduction to Unix Sockets Network Programming
 short_desc: A brief introduction to network programming using IP and Unix domain sockets
 layout: home
+show_edit_source: true
+add_no_ai_banner: true
 ---
 
 * Do not remove this line (it will not be displayed)
@@ -1829,10 +1831,10 @@ in-kernel shared context between its different calls. As a general overview:
     Overview of the <u>epoll</u> system calls. Notice how all of the calls
     interact with some instance through which state is shared. The instance is
     abstracted in the usual Unix way via a file descriptor (<b>epfd</b>).
-    The epoll instance holds an *interest list* of file descriptors it monitors.
+    The epoll instance holds an <i>interest list</i> of file descriptors it monitors.
     File descriptors (or sockets in our case) are added (or removed, or
     modified) to the interest list via the <u>epoll_ctl</u>. The return value of
-    <u>epoll_wait</u> is the length of the *ready list* -- a subset of the
+    <u>epoll_wait</u> is the length of the <i>ready list</i> -- a subset of the
     interest list referencing file descriptors that are ready for the requested
     I/O operation(s).
 </figcaption>

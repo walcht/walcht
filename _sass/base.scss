@@ -23,14 +23,15 @@ a:hover { color: var(--background-color); background-color: var(--link-color); }
 /**
  * Layout
  */
+main { position: relative; }
 .container { max-width: $container-max-width;  margin-right: auto;  margin-left: auto; padding-left: 5%; padding-right: 5%; }
 p { margin: 1em 0; word-wrap: break-word; }
 img { padding: inherit; margin: auto; display: block; max-width: 100%; width: 100%; }
-footer { color: var(--text-color);  border-top: var(--border);  margin: 20px auto 15px;  padding-top: 10px;  text-align: right; }
+footer { color: var(--text-color);  border-top: var(--border);  margin: 20px auto 15px;  padding-top: 10px;  text-align: left; margin-bottom: 20px; display: flex; justify-content: space-between; }
 header { margin-top: 25px;  margin-bottom: 10px; }
 header p { text-align: left;  margin: 0; }
-footer { margin-bottom: 20px; }
 .current-header { color: var(--background-color); background-color: var(--current-header-bg-color); }
+.no-ai-banner { position: absolute; width: 14%; max-width: 150px; right: 0; }
 
 /**
  * Highlight/Markup

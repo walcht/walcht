@@ -14,5 +14,7 @@ collections:
   posts:
     output: true
 
+hosted_at: https://github.com/walcht/walcht/blob/master/
+
 style: dark
 listen_for_clients_preferred_style: true

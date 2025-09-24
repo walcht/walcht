@@ -2,6 +2,10 @@
 layout: default
 ---
 
+{% if page.add_no_ai_banner == true %}
+<img class="no-ai-banner" loading="lazy" src="{{ "/assets/svgs/written-by-a-human-not-by-ai-badge-black.svg" | relative_url }}" alt="Written by a Human Not by AI Banner" />
+{% endif %}
+
 {{ content }}
 {% assign contentwonl = content | strip_newlines %} {% unless contentwonl == ""  %} <br /> {% endunless %} <!-- add line break if there is any content -->
 
