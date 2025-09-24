@@ -1166,6 +1166,10 @@ For the moment, assume the following: you only have one thread and you want to
 handle multiple client connections, how can you do that if you use blocking
 sockets?
 
+#### Non-Blocking I/O
+
+TODO
+
 #### Synchronous I/O Multiplexing
 
 Another reasonable answer is: use *I/O multiplexing* or, for the sake of
@@ -1191,7 +1195,7 @@ skeleton that invokes it:
 
    waits (or blocks, or sleeps) for provided events (<u>fds[i].events</u>) on a
    set of provided file descriptors (<u>fds[i].fd</u>). Returns once at least
-   one file descriptor's event has occured (e.g., if `fds[i].events` was set to
+   one file descriptor's event has occurred (e.g., if `fds[i].events` was set to
    `POLLIN` then <u>poll()</u> returns when that file descriptor has data that
    is available for reading).
 
@@ -1645,7 +1649,498 @@ is 1024 -- a low limit for modern applications).
 
 ##### Poll vs. Epoll
 
+Once the number of file descriptors that we want to watch increase (say >>
+10 000), <u>poll()</u> becomes really slow -- it just scales very poorly to
+servers with large number of connections.
+
+To quote the <u>epoll</u> manual
+> ... and scales well to large numbers of watched file descriptors.
+
+And to further quote the manual again:
+> ... epoll is simply a faster poll(2), and can be used wherever the latter is
+used since it shares the same semantics.
+
+Notice in the previous `mutiserverchat` application that the implementation has
+to loop, in worst case scenario, over all the observed file descriptors. How?
+Well, let's assume poll returns 1 -- that is, there is only one socket fd that
+is ready for a read operation. In worst case scenario, that fd could be placed
+at the end of the list that we have to loop all over hence the **O(N)** complexity.
+(actually the analysis for this is slightly more involved -- but this example
+is sufficient in showcasing the issues with <u>poll()</u>). <u>epoll</u> on
+the other hand, fills up a provided array and returns its length which results
+in looping over **exactly** the number of file descriptors whose events have
+been triggered -- given the previous scenario, <u>epoll</u> will just loop once
+giving us an **O(1) complexity**.
+
+This is not the sole advantage of using <u>poll</u>. Notice in the previous
+`multiserverchat` that <u>poll()</u> doesn't hold any state between its
+invocations -- that is, upon every new received event (i.e., loop iteration),
+<u>poll()</u> has to do a user to kernel mode switch, the kernel then has to set
+up watches on the provided file descriptor list (remember that we assume that
+this is *huge* list) alongside some initial setup (that I know very little
+about :-|), and upon returning, the kernel has to tear down all of those
+watches. Performance would increase if the kernel could somehow keep some state
+between these loop invocations. <u>epoll</u> keeps a kernel context by creating
+an *epoll instance* and passing it to the subsequent <u>epoll_wait()</u> call
+(which is analogous to the <u>poll()</u> call).
+
+Consequently, unlike <u>poll</u>, <u>epoll</u> is a set of system calls, that
+are called in the following order:
+
+1. <u>epoll_create1()</u>:
+
+   ```C
+   #include <sys/epoll.h>
+
+   int epoll_create1(int flags);
+   ```
+
+   **DESCRIPTION**
+
+   creates the above-mentioned in-kernel epoll instance.
+
+
+   **PARAMETERS**
+
+   - [in] <u>flags</u> -- OR-ed set of flags. Usually just set to 0.
+
+
+   **RETURN VALUE**
+
+   0 on success. -1 on error and <u>errno</u> is set.
+
+    ---
+
+
+1. <u>epoll_ctl()</u>:
+
+   ```C
+   #include <sys/epoll.h>
+
+   int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+   ```
+
+   **DESCRIPTION**
+
+   adds a file descriptor to the provided epoll's instance interest list for
+   monitoring, or deletes a file descriptor from the porvided epoll's instance
+   interest list, or modifies a files.
+
+
+   **PARAMETERS**
+
+   - [in] <u>epfd</u> -- epoll instance fd (returned from a call to <u>epoll_create1()</u>).
+   - [in] <u>op</u> -- which operation to perform:
+     - **EPOLL_CTL_ADD**: add a fd for monitoring.
+     - **EPOLL_CTL_MOD**: modifies a fd's <u>event</u> settings.
+     - **EPOLL_CTL_DEL**: deletes a fd from monitoring.
+   - [in] <u>fd</u> -- target file descriptor (which we want to monitor, or
+   un-monitor, or modify the settings of).
+   - [in] <u>event</u> -- settings which has the following struct:
+
+      ```C
+      struct epoll_event {
+          uint32_t      events;  /* Epoll events */
+          epoll_data_t  data;    /* User data variable */
+      };
+
+      union epoll_data {
+          void     *ptr;
+          int       fd;
+          uint32_t  u32;
+          uint64_t  u64;
+      };
+    ```
+
+   The <u>events</u> field is an OR-ed set of events that we are interested
+   in (e.g., EPOLLIN for data availability for reading -- notice the 'E'?
+   That is to distinguish it from the similarly named <u>poll()</u> events).
+   This field is similar to the <u>struct pollfd</u> from <u>poll()</u>.
+   Notice that <u>epoll_data</u> is simply a custom user-provided data.
+   Notice also that it is a union type, which means that you cannot set, for
+   instance, the fields <u>fd</u> and <u>u32</u> at the same time (well, of
+   course you can, but one will *beat* the other).
+
+
+   **RETURN VALUE**
+
+   >0 epoll instance file descriptor. -1 on error and <u>errno</u> is set.
+
+    ---
+
+
+1. <u>epoll_wait()</u>:
+
+   ```C
+   #include <sys/epoll.h>
+
+   int epoll_wait(int epfd, struct epoll_event *events,
+                  int maxevents, int timeout);
+   ```
+
+   **DESCRIPTION**
+
+   equivalent to the <u>poll()</u> call. It simply waits (i.e., blocks) until
+   at least one of the monitored file descriptors specified event(s) occur(s).
+   Similarly, it returns the number of fds whose event field is not null (i.e.,
+   some event occurred).
+
+   **PARAMETERS**
+
+   - [in] <u>epfd</u> -- epoll instance fd (returned from a call to <u>epoll_create1()</u>).
+   - [out] <u>events</u> -- dynamically filled list of ready <u>epoll_data</u>
+   structs describing which events are ready through the <u>events</u> field
+   and returning custom user-supplied data through the <u>data</u> field:
+
+      ```C
+      struct epoll_event {
+          uint32_t      events;  /* Epoll events */
+          epoll_data_t  data;    /* User data variable */
+      };
+
+      union epoll_data {
+          void     *ptr;
+          int       fd;
+          uint32_t  u32;
+          uint64_t  u64;
+      };
+      ```
+
+   - [in] <u>maxevents</u> -- maximum number of ready elements to return. <b>The
+   <u>events</u> buffer SHOULD BE allocated to contain at least this many
+   elements.</b>
+   - [in] <u>timeout</u> -- amount of time this call will block. -1 means
+   to block indefinitely.
+
+
+   **RETURN VALUE**
+
+   >0 number of file descriptors ready for the specified I/O operation. -1 on
+   error and <u>errno</u> is set.
+
+    ---
+
+Again - the important thing to retain here is that <u>epoll</u> relies on an
+in-kernel shared context between its different calls. As a general overview:
+
+<figure>
+<img loading="lazy" src="{{"/assets/svgs/epoll.svg" | relative_url }}" alt="Overview of the epoll system calls" />
+<figcaption>
+    Overview of the <u>epoll</u> system calls. Notice how all of the calls
+    interact with some instance through which state is shared. The instance is
+    abstracted in the usual Unix way via a file descriptor (<b>epfd</b>).
+    The epoll instance holds an *interest list* of file descriptors it monitors.
+    File descriptors (or sockets in our case) are added (or removed, or
+    modified) to the interest list via the <u>epoll_ctl</u>. The return value of
+    <u>epoll_wait</u> is the length of the *ready list* -- a subset of the
+    interest list referencing file descriptors that are ready for the requested
+    I/O operation(s).
+</figcaption>
+</figure>
+
+Before we proceed, it is important to note that <u>epoll</u> is NOT portable,
+i.e., it is a Linux-only approach. For maximum portability, stick to POSIX
+compliant <u>poll()</u>.
+
+That's quite a long text -- you might be bored at the moment (rightfully so), so
+here's the previous `multiserverchat` implemented using <u>epoll</u> (both
+versions are semantically equivalent - but this is *arguably* faster). Copy, or
+better, **re-write** the following  code into a `mutiserverchat_epoll.c` file:
+
+{% highlight c linenos %}
+#include "sockethelpers.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/epoll.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#define MAX_NBR_CLIENT 16384
+#define MAX_CLIENT_MSG_LENGTH 256
+
+/* Sends a message to all recipients in fds except to the listening and
+ * except_fd sockets. */
+void broadcast_msg(const int *fds, int fds_count, const char *buf,
+                   uint64_t buf_len, int list_fd, int except_fd) {
+  for (int i = 0; i < fds_count; ++i) { /* send the message to all others */
+    int dest_fd = fds[i];
+    if (dest_fd != list_fd &&
+        dest_fd != except_fd /* without this an infinite loop occurs */) {
+      if (send(dest_fd, buf, buf_len, 0) == -1) {
+        perror("send");
+      }
+    }
+  }
+  /* and print the sent message to this server's stdout */
+  printf("%s", buf);
+}
+
+/* Adds provided fd to the fds list, monitors it via the epoll instance epfd,
+ * and increments fds_count. */
+int add_to_fds(int epfd, int *fds, uint64_t *fds_count, int fd) {
+  struct epoll_event ev;
+  int idx = *fds_count;
+
+  fds[idx] = fd;
+
+  ev.events = EPOLLIN; /* data is available for reading */
+  ev.data.u64 = idx;   /* set custom user field to the index so that we can
+                          retrieve the fd later on */
+  if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+    perror("epoll_ctl");
+    return -1;
+  }
+
+  ++(*fds_count);
+  return 0;
+}
+
+/* Deletes provided fd from the fds list, closes it, un-monitors it from the
+ * the epoll instance epfd, and decrements fds_count. */
+int del_fr_fds(int epfd, int *fds, uint64_t *fds_count, uint64_t idx) {
+  struct epoll_event ev;
+  int fd = fds[idx];
+
+  /* not necessarily needed (read questions in man epoll) - stop monitoring */
+  if (epoll_ctl(epfd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+    perror("epoll_ctl");
+    return -1;
+  }
+
+  /* close the socket */
+  if (close(fd) == -1) {
+    perror("close");
+    return -1;
+  }
+
+  --(*fds_count);
+
+  /* if this is possitioned at the end of the array => do nothing */
+  if (idx == *fds_count) {
+    return 0;
+  }
+
+  fds[idx] = fds[*fds_count]; /* assign prev last element to this elm index */
+
+  /* call epoll_ctl to update the custom user data - i.e., the new index */
+  ev.events = EPOLLIN;
+  ev.data.u64 = idx;
+  if (epoll_ctl(epfd, EPOLL_CTL_MOD, fds[idx], &ev) == -1) {
+    perror("epoll_ctl");
+    return -1;
+  }
+
+  return 0;
+}
+
+/* Handles a new connection by calling accept, performing error checks, and
+ * adding the new connected socket (client) to fds. */
+void handle_new_connection(int epfd, int *fds, uint64_t *fds_count,
+                           int list_sockfd) {
+  struct sockaddr_storage remoteaddr;
+  socklen_t addrlen;
+  int newfd;
+  char remoteIP[INET6_ADDRSTRLEN];
+
+  addrlen = sizeof remoteaddr;
+  newfd = accept(list_sockfd, (struct sockaddr *)&remoteaddr, &addrlen);
+  if (newfd == -1) {
+    perror("accept");
+  } else {
+    add_to_fds(epfd, fds, fds_count, newfd);
+    /* broadcast to all clients (except the new client itself) that a new user
+     * has joined the chat room */
+    char msg_buf[256];
+    snprintf(msg_buf, sizeof(msg_buf), "user %d joined the chat room\n", newfd);
+    broadcast_msg(fds, *fds_count, msg_buf, strlen(msg_buf) + 1, list_sockfd,
+                  newfd);
+  }
+}
+
+/* Handles the client data which amounts to either receiving a message and
+ * broadcasting it to other clients or hang up in which case the client's socket
+ * fd is closed, removed from the fds list and fd_count is decremented.
+ */
+void handle_client_data(int epfd, int *fds, uint64_t *fds_count,
+                        int list_sockfd, uint64_t idx) {
+  char buf[MAX_CLIENT_MSG_LENGTH];
+  int sender_fd = fds[idx];
+  int nbytes = recv(sender_fd, buf, sizeof(buf), 0);
+
+  if (nbytes <= 0) {   /* error or connection closed */
+    if (nbytes != 0) { /* error */
+      perror("recv");
+    }
+
+    del_fr_fds(epfd, fds, fds_count, idx);
+
+    /* broadcast to all clients that this user disconnected */
+    char msg_buf[256];
+    snprintf(msg_buf, sizeof(msg_buf), "user %d disconnected\n", sender_fd);
+    broadcast_msg(fds, *fds_count, msg_buf, strlen(msg_buf) + 1, list_sockfd,
+                  -1);
+    return;
+  }
+
+  /* since this is a messaging up - expected data is a set of messages (i.e.,
+   * null terminated char buffers - thus you have to absolutely sure to set
+   * the null termination character! */
+  buf[nbytes] = '\0';
+
+  /* broadcast what this user sent to all other clients */
+  char msg_buf[32 + MAX_CLIENT_MSG_LENGTH]; /* "user %d: " max length is
+                                               assmumed to be <= 32 */
+  snprintf(msg_buf, sizeof(msg_buf), "user %d: %s", sender_fd, buf);
+  broadcast_msg(fds, *fds_count, msg_buf, strlen(msg_buf) + 1, list_sockfd,
+                sender_fd);
+}
+
+int main(int argc, char *argv[]) {
+  /* usual arguments checking (of course you should not do this in production
+   * code and you should use something like getopt) */
+  if (argc != 2) {
+    printf("Usage: %s PORT\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  int list_sockfd, epfd; /* listening socket, epoll instance fd */
+  char *port = argv[1];
+  struct epoll_event *events; /* these will be filled by epoll_wait */
+  int *fds;                   /* keep track of socket fds */
+  uint64_t fds_count = 0;     /* count of elements in pfds */
+
+  /* create the epoll instance */
+  epfd = epoll_create1(0);
+  if (epfd == -1) {
+    perror("epoll_create1");
+    exit(EXIT_FAILURE);
+  }
+
+  /* allocate the maximum possible number of clients - this will be dynamically
+   * filled by epoll_wait but NOT allocated by it*/
+  events =
+      (struct epoll_event *)calloc(MAX_NBR_CLIENT, sizeof(struct epoll_event));
+  if (events == NULL) {
+    perror("calloc");
+    exit(EXIT_FAILURE);
+  }
+
+  /* allocate maximum number of possible clients - this is a client-side list
+   * to keep track of client socket fds */
+  fds = (int *)calloc(MAX_NBR_CLIENT, sizeof(int));
+  if (fds == NULL) {
+    perror("calloc");
+    exit(EXIT_FAILURE);
+  }
+
+  /* create the listening socket */
+  list_sockfd = create_listening_socket(port, 512);
+  if (list_sockfd == -1) {
+    perror("create_listening_socket");
+    exit(EXIT_FAILURE);
+  }
+
+  /* add the listening socket to the fds list */
+  add_to_fds(epfd, fds, &fds_count, list_sockfd);
+
+  puts("started the main poll loop");
+
+  /* poll loop, poll-ing loop, main loop, or whatever you want to call it */
+  for (;;) {
+
+    /* this blocks until one or more sockets are ready (i.e., instant return
+    upon call) for the specified operation */
+    int epoll_count =
+        epoll_wait(epfd, events, MAX_NBR_CLIENT, -1 /* infinite timeout */);
+    if (epoll_count == -1) {
+      perror("epoll_wait");
+      exit(EXIT_FAILURE);
+    }
+
+    /* loop through ready sockets */
+    for (int j = 0; j < epoll_count; ++j) {
+
+      uint64_t idx =
+          events[j].data.u64; /* data is a custom user-filled field - in this
+                                 case we fill the u64 field with the index of
+                                 the fd in the fds array */
+      int fd = fds[idx];
+
+      /* data is available for reading or client hang up */
+      if (events[j].events & (EPOLLIN | EPOLLHUP)) {
+
+        /* if this the listening socket fd then we have a new connection */
+        if (fd == list_sockfd) {
+          handle_new_connection(epfd, fds, &fds_count, list_sockfd);
+        } else { /* either got msg from this client or conn closed */
+          handle_client_data(epfd, fds, &fds_count, list_sockfd, idx);
+        }
+
+      } else { /* (EPOLLERR) - some error happened */
+
+        if (fd != list_sockfd) {
+
+          char msg_buf[256];
+          snprintf(msg_buf, sizeof(msg_buf),
+                   "client %d disconnected due to error", fd);
+          broadcast_msg(fds, fds_count, msg_buf, strlen(msg_buf) + 1,
+                        list_sockfd, fd);
+        }
+
+        del_fr_fds(epfd, fds, &fds_count, idx);
+      }
+
+    } // END INNER FOR LOOP
+
+  } // END MAIN FOR LOOP
+
+  /* don't forget to free the previously allocated epoll events array (of
+   * course, this is not needed here because the process will exit in next
+   * instruction - but better always keep this muscle memory) */
+  free(events);
+
+  /* close epfd, and fds here etc ... */
+
+  exit(EXIT_SUCCESS);
+}
+{% endhighlight %}
+
+Similarly to the previous poll-based `multichatserver` program, to compile the
+`multichatserver_epoll` application, run:
+
+   ```bash
+   cc -o multiserverchat_epoll multiserverchat_epoll.c sockethelpers.c
+   ```
+
+1. Run the `multiserverchat_epoll` executable in a terminal:
+
+   ```bash
+   ./multiserverchat 9040
+   ```
+
+1. In multiple other terminals, run:
+
+   ```bash
+   telnet localhost 9040
+   ```
+
+1. Write messages in each terminal and see other terminals receiving it. Try
+exiting some terminals to see the "user X disconnected" messages.
+
+You have just successfully created an *arguably* more performant multi chat-room
+server. Go through the source code in detail and pay attention to the comments.
+
 #### One Thread Per Connection Model
+
+#### More Advanced Combined Approaches
+
+TODO (will only mention this very, very briefly since there are quite a lot of
+details here)
 
 ### The C10K Problem
 
@@ -1653,7 +2148,9 @@ is 1024 -- a low limit for modern applications).
 
 TODO: this is only discussed
 
-### Advanced TCP Multi-Chat Server-Client Application
+### Serialization/Deserialization
+
+So far we have only sent ANSI
 
 ## Unix Domain Sockets
 
