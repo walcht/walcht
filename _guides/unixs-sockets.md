@@ -322,9 +322,42 @@ on top of the TCP/IP communication stack usually using a well known protocol
 </figcaption>
 </figure>
 
-## Connectionless vs. Connection-Oriented Sockets
+## Connectionless vs. Connection-Oriented Protocols
 
-TODO
+Knowledge of the main transport layer protocols (TCP vs. UDP) and their
+distinctions is vital for any application level programmer (or any programmer
+in general). The distinction, at least at a high level, is fairly simple.
+
+### Connection-Oriented Protocols (TCP)
+
+*Connection-oriented protocols* (mainly TCP - hereafter these will be used
+interchangeably) maintain, **at the transport layer**, some state information
+between successive packets. This requires that such protocols establish some
+sort of a connection before sending any packets.
+
+Since state is maintained between packets in the protocol implementation at the
+transport layer, reliability can be guaranteed. E.g., sender can employ an
+acknowledgment mechanism to track which packets were successfully sent, the
+receiver can remember which packets were received and discard duplicate ones,
+etc.
+
+### Connectionless Protocols (UDP)
+
+*Connectionless protocols* (mainly UDP - hereafter these will be used
+interchangeably) handles each packet, **at the transport layer**, independently
+from any other (i.e., no state is maintained).
+
+Note here that we are talking about state in the protocol implementation at the
+transport layer. At the application level, any non-trivial program will have to
+maintain state between packets.
+
+This implies some probable unreliability -- each packet is simply just sent but
+not guaranteed to be received, not to be delayed, or to be in correct order
+(with regards to other packets).
+
+This also implies that UDP is a significantly simpler protocol than TCP (both
+conceptually and in terms of implementation). At the application layer, the
+initial setup of UDP is simpler as no connection setup code is required.
 
 ## Internet Domain Sockets (IP Sockets)
 
