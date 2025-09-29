@@ -359,11 +359,45 @@ This also implies that UDP is a significantly simpler protocol than TCP (both
 conceptually and in terms of implementation). At the application layer, the
 initial setup of UDP is simpler as no connection setup code is required.
 
+A term that is widely used in the context of connectionless protocols is 
+*datagrams* -- to quote the [RFC1594][rfc1594]:
+
+> A self-contained, independent entity of data carrying sufficient information
+> to be routed from the source to the destination computer without reliance on
+> earlier exchanges between this source and destination computer and the
+> transporting network.
+
+You cannot, for instance, call a TCP segment a datagram -- that is simply
+incorrect as TCP packets are NOT independent and rely on an initial handshake
+setup. In practice, datagrams usually refer to UDP packets (it is the name after
+all -- User **Datagram** Protocol).
+
+There are a couple of things that one needs to keep in mind when using UDP:
+
+- **Datagram order is NOT guaranteed** -- Datagrams are NOT necessarily received
+in the same order as they were sent! If you send, say packets A, B, C, D you
+might receive A, C, B, D.
+
+- **Datagram may NOT reach the target** -- Datagrams may simply NOT reach the
+target. E.g., if you send datagrams A, B, C, D the receiver might receive
+packets A, -, D, C (datagram B is dropped).
+
+If you are looking for an example application of UDP from scratch in C (and
+Python), I am currently working on an [Image Over UDP Protocol Implementation From Scratch in C]().
+The guide documents how you can use UDP to send images to a custom target using
+IP sockets. The guide also demonstrates how to handle UDP-related challenges
+including, but not limited to:
+
+- Handling out-of-order packets -- by having a custom sequence number in the
+header
+- Handling dropped packets -- by replacing image regions with pink color (from
+computer graphics practice of pink shaders :-))
+
 ## Internet Domain Sockets (IP Sockets)
 
 ### Simple TCP Server-Client Application
 
-Before we even start, it should be noted that TCP is a **very complex** and you,
+Before we even start, it should be noted that TCP is **very complex** and you,
 as an application developer, don't have to delve deep into its details.
 
 We will jump directly into a simple socket API example application then we will
@@ -1085,10 +1119,8 @@ the server application):
 
 1. You will be prompted for a message to send, just type anything short.
 
-
 1. You should see this message printed in the server terminal and echoed back
 to you
-
 
 For TCP client applications (such as the one above), the order of the socket API
 calls is as follows (already mentioned calls in the server application will not
@@ -1178,6 +1210,392 @@ Throughout this guide we will add additional functions to the aforementioned
 library.
 
 ### Simple UDP Server-Client Application
+
+Similar to the previous TCP server-client application, we are going to write a
+very simple UDP server-client application. This application can be used as a
+skeleton for more complex UDP server/client programs.
+
+As previously mentioned, UDP is a connectionless protocol -- the *datagrams* 
+(this is what the data is called at the transport layer for UDP) will try their
+best to reach the target but may not do so. If they do, then it is guaranteed
+that the received datagram is correct (through error checking mechanism employed
+at the protocol level).
+
+Consequently, UDP programs do NOT make use of <u>accept()</u> and
+<u>connect()</u> calls. They potentially also do NOT make use of <u>recv()</u>
+and <u>send()</u> because these do NOT provide the option to fill/pass which
+address the data was received from and the address to send the data to,
+respectively.
+
+The application will make use of IPv6 just to demonstrate how easy it is to
+write IP-version-agnostic networking code. The server will listen for a single
+message from a client after which it simply turns off.
+
+#### UDP Server Program
+
+Copy (or better -- rewrite) the following UDP IPv6 listener (server) code into a
+`udplistener.c` file:
+
+{% highlight c linenos %}
+#include "sockethelpers.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+  int sockfd, rv;
+  char *port;               /* filled from command line */
+  uint64_t maxbuflen = 256; /* filled from command line */
+  uint64_t nbr_bytes = 0;   /* number of received bytes from a client */
+  struct addrinfo hints, *servinfo, *p;
+  char addr_str[INET6_ADDRSTRLEN];
+  struct sockaddr_storage their_addr;     /* holds address of a client */
+  socklen_t addr_len = sizeof their_addr; /* inout parameter for recvfrom */
+  char buf[maxbuflen];
+
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s PORT MAXBUFLEN\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  port = argv[1];
+  maxbuflen = strtol(argv[2], NULL, 10);
+
+  /* The AI_PASSIVE flag means "hey, look for this host's IPs that can
+   * be used to accept connection (i.e., bind() calls). This is the usual
+   * pattern for IPv6 servers (for IPv4 all you need to do is change the
+   * ai_family to AF_INET -- how utterly complex!) */
+  memset(&hints, 0, sizeof(hints));
+  hints.ai_family = AF_INET6;     /* only IPv6 */
+  hints.ai_socktype = SOCK_DGRAM; /* UDP */
+  hints.ai_flags = AI_PASSIVE;    /* 'our' IPs (or interfaces) */
+
+  /* get socket addresses for the provided hints - in this case, since node is
+   * NULL and AI_PASSIVE flag is set, the returned sockets are suitable for
+   * bind() calls (i.e., suitable for server applications to accept connections
+   * or recvieve data using recvfrom) */
+  rv = getaddrinfo(NULL, port, &hints, &servinfo);
+  if (rv != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    exit(EXIT_FAILURE);
+  }
+
+  /* loop through the returned host addresses from getaddrinfo() and open a
+   * socket for the first valid one */
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    /* try to create a blocking socket */
+    sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    if (sockfd == -1) {
+      continue;
+    }
+
+    rv = bind(sockfd, p->ai_addr, p->ai_addrlen);
+    if (rv == 0)
+      break; /* success */
+
+    close(sockfd);
+  }
+
+  /* remember to call this to avoid a memory leak! */
+  freeaddrinfo(servinfo);
+
+  /* freeaddrinfo does not NULL assign the ai_next pointers in the address
+   * structures */
+  if (p == NULL) {
+    fprintf(stderr, "[listener] failed to bind socket\n");
+    exit(2);
+  }
+
+  printf("[listener] waiting to recvfrom ...\n");
+
+  /* Receive data from a client (any client that calls sendto() to 'us'). Here
+   * we are using recvfrom() rather than receive() because this is a
+   * connectionless protocol and we can provide an addr and addr_len output
+   * arguments for recvfrom() to fill with the client's address and its length,
+   * respectively. Also important to note that this socket is blocking - this
+   * will block (i.e., sleep) until data is available for reading */
+  nbr_bytes = recvfrom(sockfd, buf, maxbuflen - 1, 0,
+
+                       (struct sockaddr *)&their_addr, &addr_len);
+  if (nbr_bytes == -1) {
+    perror("recvfrom");
+    exit(1);
+  }
+
+  printf("[listener] got packet from %s\n",
+         inet_ntop(their_addr.ss_family,
+                   get_addr_struct((struct sockaddr *)&their_addr), addr_str,
+                   sizeof addr_str));
+
+  printf("[listener] packet is %lu bytes long\n", nbr_bytes);
+
+  /* be absolutely sure to null terminate the received string */
+  buf[nbr_bytes] = '\0';
+
+  printf("[listener] packet contains '%s'\n", buf);
+
+  if (close(sockfd) == -1) {
+    perror("close");
+    exit(EXIT_FAILURE);
+  }
+
+  exit(EXIT_SUCCESS);
+}
+{% endhighlight %}
+
+1. Compile the aforementioned code:
+
+   ```bash
+   cc -o udplistener udplistener.c sockethelpers.c
+   ```
+
+1. Open a new terminal, and run `udplistener`:
+
+   ```bash
+   ./udplistener 9040 256
+   ```
+
+1. Just keep the server running -- in the next section we will compile a client
+program and send a message to this running listener.
+
+For UDP server applications (such as the one above), the order of the socket API
+calls is as follows:
+
+1. <u>getaddrinfo()</u> -- for filling up the server's <u>addrinfo</u> structs.
+
+1. <u>socket()</u> -- for creating the socket through which messages are
+received.
+
+1. <u>bind()</u> -- for binding the socket to 'our' address (i.e., server's own
+IP address). This allows clients to send data to this server via the specified
+port. Note that client programs do NOT usually call this method because they
+simply do NOT have to. In such case, the OS simply assigns an unused port to
+the created socket (as explained above in the [TCP Server Program](#tcp-server-program) the
+client HAS to know the port of the server to which it is going to send data to.
+On the other hand, if the server wants to respond to the client, then it can
+know its randomly OS-assigned port via the <u>recvfrom()</u> call).
+
+1. <u>freeaddrinfo()</u> -- for cleaning up (freeing) the <u>addinfo</u> linked
+list allocated by <u>getaddrinfo</u>.
+
+1. <u>recvfrom()</u>:
+
+   ```C
+   #include <sys/socket.h>
+
+   ssize_t recvfrom(int sockfd, void buf[restrict .len], size_t len,
+                    int flags,
+                    struct sockaddr *_Nullable restrict src_addr,
+                    socklen_t *_Nullable restrict addrlen);
+   ```
+
+   **DESCRIPTION**
+   
+   The <u>recv()</u> version for connectionless protocols (UDP). Since this is
+   typically used for UDP, the client's address structure information can be
+   filled by this call via the two extra parameters (relative to <u>recv()</u>)
+   <u>src_addr</u> and <u>addrlen</u>.
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- the potentially connectionless socket file descriptor
+   through which data is received.
+   - [out] <u>buf</u> -- buffer into which the received data is filled.
+   - [in] <u>len</u> -- maximum number of bytes to receive (could receive less).
+   - [in] <u>flags</u> -- OR-ed set of flags - setting this to 0 and the next
+   two parameters to NULL is equivalent to a call to <u>read()</u>.
+   - [out] <u>src_addr</u> -- if not NULL, the source (client) address is placed here.
+   - [inout] <u>addrlen</u> -- if <u>src_addr</u> is NOT NULL, this should be
+   initialized to the size of structure passed to <u>src_addr</u>. Upon return,
+   this is filled with the actual required address length (if less than what
+   is provided, then the <u>src_addr</u> was truncated).
+
+   **RETURN VALUE**
+
+   On success, returns the number of bytes received which might be less than
+   <u>len</u>. 0 is potentially a 0-length datagram (remember that this call
+   is usually used with datagram sockets). -1 is returned on failure and
+   <u>errno</u> is set.
+
+    ---
+
+
+#### UDP Client Program
+
+Copy (or better -- rewrite) the following UDP IPv6 listener (client) code
+into a `udptalker.c` file:
+
+{% highlight c linenos %}
+#include "sockethelpers.h"
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int main(int argc, char *argv[]) {
+  int sockfd, rv, nbr_bytes;
+  struct addrinfo hints, *servinfo, *p;
+  char *port, *hostname, *msg;     /* filled from command line */
+  char addr_str[INET6_ADDRSTRLEN]; /* holds address representation string */
+
+  if (argc != 4) {
+    fprintf(stderr, "Usage: %s HOSTNAME PORT MESSAGE\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
+  hostname = argv[1];
+  port = argv[2];
+  msg = argv[3];
+
+  /* Fill up the addrinfo hints by choosing IPv4 vs. IPv6, UDP vs. TCP and the
+   * target IP address. In this case, we are using UDP (datagram) and IPv6. */
+  memset(&hints, 0, sizeof hints);
+  hints.ai_family = AF_INET6;
+  hints.ai_socktype = SOCK_DGRAM;
+
+  /* get socket addresses for the provided hints - in this case, node is set to
+   * the server (or hostname) that we want to send data to. Remember that this
+   * call simply fills up a linked list of addrinfo structs -- it does NOT set
+   * anything up! Later, a candidate will be picked from the structs and will
+   * be used as arguments to the actual calls that send data. */
+  rv = getaddrinfo(hostname, port, &hints, &servinfo);
+  if (rv != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+    exit(EXIT_FAILURE);
+  }
+
+  /* loop through the linked list returned from getaddrinfo until a socket is
+   * successfully created */
+  for (p = servinfo; p != NULL; p = p->ai_next) {
+    /* this function reads: inet network to presentation. It converts a given
+     * address (IPv4 or IPv6) into a string representation */
+    inet_ntop(p->ai_family, get_addr_struct(p->ai_addr), addr_str,
+              INET6_ADDRSTRLEN);
+    /* print current attempted address */
+    printf("[server] trying to create a socket for %s:%s ...\n", addr_str,
+           port);
+
+    sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    if (sockfd != -1)
+      break; /* success */
+  }
+
+  /* free the linked list allocated by previous call to getaddrinfo */
+  freeaddrinfo(servinfo);
+
+  /* if p is null this means that we were NOT successful in creating a socket */
+  if (p == NULL) {
+    fprintf(stderr, "talker: failed to create socket\n");
+    exit(EXIT_FAILURE);
+  }
+
+  /* send the message -- notice the use of sendto() and NOT send() because this
+   * is a connectionless protocol (i.e., we have to specify to whom we are
+   * sending the data every time because the protocol does NOT maintain state
+   * between packets!) */
+  nbr_bytes = sendto(sockfd, msg, strlen(msg), 0, p->ai_addr, p->ai_addrlen);
+  if (nbr_bytes == -1) {
+    perror("sendto");
+    exit(EXIT_FAILURE);
+  }
+
+  printf("talker: sent %d bytes to %s\n", nbr_bytes, hostname);
+
+  /* do NOT forget to close the socket */
+  if (close(sockfd) == -1) {
+    perror("close");
+    exit(EXIT_FAILURE);
+  }
+
+  exit(EXIT_SUCCESS);
+}
+{% endhighlight %}
+
+1. Compile the aforementioned code:
+
+   ```bash
+   cc -o udptalker udptalker.c sockethelpers.c
+   ```
+
+1. Assuming that the aforementioned `udplistener` server is currently running,
+run `udptalker`:
+
+   ```bash
+   ./udptalker localhost 9040 "write any msg here"
+   ```
+
+1. You should see the message you have supplied printed out in the server's 
+terminal.
+
+For UDP client applications (such as the one above), the order of the socket API
+calls is as follows (notice the absence of the <u>bind()</u> call relative to
+the UDP server application):
+
+1. <u>getaddrinfo()</u> -- for filling up the server's <u>addrinfo</u> structs.
+Here, the target server's IP alongside its port are provided (notice the
+difference between how this is called for client vs. server applications --
+for the UDP server, it is requested to supply *our* addresses, while for the
+UDP client, it is requested to supply *server addresses* over the provided
+port and IP).
+
+1. <u>socket()</u> -- for creating the socket through which messages are sent.
+
+1. <u>freeaddrinfo()</u> -- for cleaning up (freeing) the <u>addinfo</u> linked
+list allocated by <u>getaddrinfo</u>.
+
+1. <u>sendto()</u>:
+
+   ```C
+   #include <sys/socket.h>
+
+   ssize_t sendto(int sockfd, const void buf[.len], size_t len, int flags,
+                  const struct sockaddr *dest_addr, socklen_t addrlen);
+   ```
+
+   **DESCRIPTION**
+   
+   The <u>sendto()</u> version for connectionless protocols (UDP). Since this is
+   typically used for connectionless protocols, the target's address structure
+   information can be provided in the two extra parameters (relative to <u>send()</u>)
+   <u>dest_addr</u> and <u>addrlen</u>.
+
+   **PARAMETERS**
+
+   - [in] <u>sockfd</u> -- the potentially connectionless socket file descriptor
+   through which data is send.
+   - [in] <u>buf</u> -- buffer pointing to data that will be sent.
+   - [in] <u>len</u> -- maximum number of bytes from <u>buf</u> to send (could
+   send less).
+   - [in] <u>flags</u> -- OR-ed set of flags - setting this to 0 and the next
+   two parameters to NULL and 0, respectively, is equivalent to a call to
+   <u>send()</u>.
+   - [in] <u>dest_addr</u> -- destination address. Can be set to NULL if this is
+   used with connection-based protocols (but then why not just use
+   <u>send()</u>?).
+   - [in] <u>addrlen</u> -- if <u>dest_addr</u> is NOT NULL, this should be
+   initialized to the size of structure passed to <u>dest_addr</u>. Ignored if
+   <u>dest_addr</u> is NULL.
+
+   **RETURN VALUE**
+
+   On success, returns the number of bytes sent which might be less than
+   <u>len</u>. -1 is returned on failure and <u>errno</u> is set.
+
+    ---
+
+Congrats! You have created your first UDP client-server application. See, it is
+not so different from the typical TCP client-server application.
 
 ### Networking I/O Modes
 
@@ -2195,3 +2613,4 @@ TODO
 [computer_networks_a_systems_approach]: https://book.systemsapproach.org/index.html
 [c10m]: https://highscalability.com/the-secret-to-10-million-concurrent-connections-the-kernel-i
 [io_modes]: https://notes.shichao.io/unp/ch6/
+[rfc1594]: https://www.rfc-editor.org/rfc/rfc1594.html
