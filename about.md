@@ -284,4 +284,4 @@ or improve my German language skills.
 [ensi]: https://www.linkedin.com/school/ensitn/
 [uni-passau]: https://www.uni-passau.de/en/
 [ipeit]: https://fr.wikipedia.org/wiki/Institut_pr%C3%A9paratoire_aux_%C3%A9tudes_d%27ing%C3%A9nieurs_de_Tunis
-[projects]: {{ "/assets/style.css" | absolute_url }
+[projects]: {{ "/assets/style.css" | absolute_url }}
