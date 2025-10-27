@@ -17,13 +17,13 @@ I am a software engineer specializing in the domain of computer graphics (i.e.,
 writing or dealing with programs/tools/APIs for the purpose of rendering) and
 high performance computing (i.e., multi-threading, parallel programming, etc.).
 I have professional experience in the automotive industry in the area of
-Augmented Reality (AR) Head-up-Displays (HUD) (see
-[AR-HUD Software Engineer @ Volkswagen AG]
-(#ar-hud-software-engineer--volkswagen-ag---cariad) for detailed description).
+Augmented Reality (AR) Head-up-Displays (HUD) (see [AR-HUD Software Engineer @ Volkswagen AG](#ar-hud-software-engineer--volkswagen-ag---cariad)
+for details).
 
 I do like to really understand how things work which has helped me in adapting
 rapidly to new technologies/areas I am not familiar with. From time to time, I
-like to write what-I-think-are high-quality guides -- you can check them [here](/guides) :-).
+like to write what-I-think-are high-quality guides -- you can check them
+[here][guides] :-).
 
 I have a keen interest for FOSS projects -- I try to use them whenever possible
 to avoid vendor lock-ins, contribute back to the community, and promote *better*
@@ -86,25 +86,25 @@ other things, build tools, deploy and test proof of concepts, and write C++
 samples.
 
 Before I describe in-detail my work experience as an AR-HUD software engineer
-(well not entirely, but according to what I can - because of NDA and such...),
+(well not entirely, but according to what I can - because of NDA and such),
 the concept of *AR HUD* has to be explained. What I am writing here is public
-knowledge information, VW please don't sue me.
+knowledge information -- VW, please do not sue me.
 
-*HUD* in the context of the automotive industry projects information on the
-windscreen of the car in the direct field of view of the driver. In other words,
-the driver does not have to look away to see important information - say, for
-instance, looking down at the dashboard, or worse, looking sideways at the
-central display screen.
+*Heads-up-display* (*HUD*), in the context of the automotive industry, projects
+information on the windscreen of the car in the direct field of view of the
+driver. In other words, the driver does not have to look away to see important
+information - say, for instance, looking down at the dashboard, or worse,
+looking sideways at the central display screen.
 
 <img loading="lazy" src="assets/images/ar-hud-static-vs-ar-images.jpeg"
 alt="AR HUD static vs. AR fields" />
 
-This picture illustrates the two projection fields for the HUD:
-- the status field (or *near field*) is mainly used for 2D status information
+The above picture illustrates the two projection fields for the HUD:
+- *Status field* (or *near field*) -- mainly used for 2D status information
 (e.g., speed, current traffic sign, and general status messages). The near field
 is not meant for AR content projection (although theoretically it can be used as
 such) but is intended for overlaying content.
-- the AR field (or *far field*) is the larger field that is used for actual AR
+- *AR field* (or *far field*) -- the larger field that is used for actual AR
 content (e.g., showing navigation arrows, showing current ACC, etc.)
 
 This [video][ar-hud-audi-showcase] showcases the AR-HUD feature/concept for the
@@ -140,7 +140,7 @@ Used technologies: Deck.gl, WebGL, and TypeScript.
   accelerated [Leaflet][leaflet] map renderer.
 
 - Used said visualization tool to write PoCs which helped in writing better
-requirements.
+requirements. Used technologies: DOORS.
 
   To save costs and decrease development times, some proof of concepts (PoCs)
   are developed using said visualization tool and are checked for validity using
@@ -148,8 +148,8 @@ requirements.
 
   This approach resulted in us figuring out that certain
   features/functionalities had some issues when tested on real test drive data.
-  Consequently, requirements where adjusted before final submission to the
-  provider(s) which avoided potential future issues and delays.
+  Consequently, requirements were adjusted before final submission to the
+  provider(s) which avoided potential future issues and significant delays.
 
 - Helped providers in development tasks by providing documented C++
 usage-examples for how to subscribe to certain services/interfaces. Used
@@ -157,17 +157,17 @@ technologies: C++, CMake, SomeIP, OpenGL, OpenGL ES, IP Sockets.
 
   Particularly, I contributed in the initial setup of HUD devices by providing
   C++ sample code on how to render a triangle (i.e., the usual *Hello World* of
-  computer graphics) on the provided HUD device. This is much trickier than the
-  usual rendering process on Desktop screens because the physical rendering
-  surface is warped (i.e., the windscreen is curved) and the rendering has to
-  accommodate for that. There are additionally a lot of *Gotchas*. E.g.,
-  rendering a very large triangle may not work because the HUD simply rejects
-  the projection because it might obscure the vision of the driver (a necessary
-  security feature so that, you know, in case a glitch happens you get the
-  chance to not get killed by it).
+  computer graphics but for AR-HUDs rather than conventional 2D screens) on the
+  provided HUD device. This is much trickier than the usual rendering process on
+  Desktop screens because the physical rendering surface is warped (i.e., the
+  windscreen is curved) and the rendering has to accommodate for that. There are
+  additionally a lot of *Gotchas*. E.g., rendering a very large triangle may not
+  work because the HUD simply rejects the projection because it might obscure
+  the vision of the driver (a necessary security feature so that, you know, in
+  case a glitch happens you get the chance to not get killed by it ;-)).
 
   This task required some roll-your-sleeves-and-get-your-hands-dirty type of
-  debugging where documentation was sparse (or worse - non existent).
+  debugging where documentation was sparse (or worse -- non existent).
 
 - Contributed to identifying and solving issues related with certain AR-HUD
 functionalities. E.g., Audi's global drone positioning improvements (see
@@ -192,8 +192,16 @@ functionalities.
 - Wrote Python scripts to parse and visualize a multitude of data dumps. Used
 technologies: Python, Tkinter, Plotly.
 
+  Important to note here that this made me realize how absolutely inefficient
+  Plotly is for anything out of the usual, generic visualizations. Also, GUI
+  programming in Python is something to avoid like the Plague.
+
 - Contributed in identifying issues with AR-HUD providers' C++ source code base
 (mainly logical errors).
+
+  Having to do significant jumps to debug the most trivial issues is surely NOT
+  an indication of a high-quality C++ codebase. Also, using design patterns for
+  the sake of just having design patterns is extremely frustrating.
 
 - Worked within a highly interdisciplinary team involving software engineers,
 product managers, and test engineers.
@@ -214,7 +222,8 @@ defeats that.
 
 In April 2025 I obtained a double Master's degree in computer science at the
 [University of Passau][uni-passau] (Germany) and the National School of Computer
-Science ([ENSI][ensi]) (Tunisia).
+Science ([ENSI][ensi] -- whose official website won't load. *The irony*)
+(Tunisia).
 
 My double Masters graduation thesis is titled:
 
@@ -268,7 +277,7 @@ teaches :-/)
 # Activities and Interests
 
 In case you are a recruiter reading this and you happen to play Volleyball
-and/or Football (or Soccer -_-), consider adding me to your team :-D.
+and/or Football, consider adding me to your team :-D.
 
 Other than sports, whenever I have free time, I like to read technical books
 or improve my German language skills.
@@ -284,4 +293,7 @@ or improve my German language skills.
 [ensi]: https://www.linkedin.com/school/ensitn/
 [uni-passau]: https://www.uni-passau.de/en/
 [ipeit]: https://fr.wikipedia.org/wiki/Institut_pr%C3%A9paratoire_aux_%C3%A9tudes_d%27ing%C3%A9nieurs_de_Tunis
-[projects]: {{ "/assets/style.css" | absolute_url }}
+[projects]: {{ "/projects" | absolute_url }}
+[guides]: {{ "/guides" | absolute_url }}
+[leaflet]: https://github.com/Leaflet/Leaflet
+[folium]: https://github.com/python-visualization/folium
