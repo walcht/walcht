@@ -2,6 +2,7 @@
 title: /projects
 layout: home
 permalink: /projects
+add_no_ai_banner: true
 ---
 
 <h1>Maintained Projects</h1>
@@ -9,8 +10,23 @@ permalink: /projects
 <ul>
   {% for project in site.data.projects %}
   {% if project.still_maintained == true %}
-  <li>
-    <a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}
+  <li class="project-list-elem">
+    <p><a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}</p>
+    <div class="thumbnail-container">
+      {% if project.thumbnail != nil %}
+      {% if project.thumbnail_hq_link != nil %}
+      <a href="{{ project.thumbnail_hq_link }}" class="thumbnail"><img loading="lazy" src="{{ project.thumbnail }}"
+        {% if project.thumbnail_alt %} alt="{{ project.thumbnail_alt }}" {% endif %}/></a>
+      {% else %}
+        <img loading="lazy" class="thumbnail" src="{{ project.thumbnail }}" {% if project.thumbnail_alt %}
+        alt="{{ project.thumbnail_alt }}" {% endif %}/>
+      {% endif %}
+      {% endif %}
+      <div>
+        <p><b>Used technologies: {{ project.used_technologies }}</b></p>
+        <p>{{ project.detailed_desc }}</p>
+      </div>
+    </div>
   </li>
   {% endif %}
   {% endfor %}
@@ -22,8 +38,23 @@ permalink: /projects
 <ul>
   {% for project in site.data.projects %}
   {% if project.still_maintained == false %}
-  <li>
-    <a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}
+  <li class="project-list-elem">
+    <p><a href="{{ project.repo }}">{{ project.name }}</a> - {{ project.short_desc }}<p>
+    <div class="thumbnail-container">
+      {% if project.thumbnail != nil %}
+      {% if project.thumbnail_hq_link != nil %}
+      <a href="{{ project.thumbnail_hq_link }}" class="thumbnail"><img loading="lazy" src="{{ project.thumbnail }}"
+        {% if project.thumbnail_alt %} alt="{{ project.thumbnail_alt }}" {% endif %}/></a>
+      {% else %}
+        <img loading="lazy" class="thumbnail" src="{{ project.thumbnail }}" {% if project.thumbnail_alt %}
+        alt="{{ project.thumbnail_alt }}" {% endif %}/>
+      {% endif %}
+      {% endif %}
+      <div>
+        <p><b>Used technologies: {{ project.used_technologies }}</b></p>
+        <p>{{ project.detailed_desc }}</p>
+      </div>
+    </div>
   </li>
   {% endif %}
   {% endfor %}

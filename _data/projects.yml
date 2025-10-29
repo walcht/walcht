@@ -1,47 +1,104 @@
 - name: Unity CT Visualizer
   repo: https://github.com/walcht/com.walcht.ctvisualizer
   short_desc: High performance, out-of-core CT/MRI volume visualizer for very large datasets using the Unity game engine
-  thumbnail: /assets/images/audi-ar-hud.jpeg
+  detailed_desc: >
+    Initially started as my Master's Thesis project for direct volume rendering of very large volumetric datasets
+    (hundreds of GBs) for immersive environments (XR, Magic Leap 2).
+  used_technologies: C#, Unity3D, Vulkan, OpenGL
+  thumbnail: assets/images/ctvisualizer-enigma-showcase-thumbnail.jpg
+  thumbnail_hq_link: https://raw.githubusercontent.com/walcht/walcht/refs/heads/master/assets/images/ctvisualizer-enigma-showcase.jpg
   still_maintained: true
+
 - name: Neovim Unity
   repo: https://github.com/walcht/neovim-unity
-  short_desc: Ready-to-use, pre-configured Neovim for game development using Unity game engine
-  thumbnail: /assets/images/neovim-unity.jpeg
+  short_desc: Ready-to-use, pre-configured Neovim for game development using the Unity game engine
+  detailed_desc: >
+    Since the official Unity VSCode extension for C# Unity development is dependent on non-permissive Microsoft
+    licenses that dissallow its usage with any other non-Microsoft products, I decided to build an IDE-like experience
+    for Unity development on NeoVim. The project is quite big and involves a set of other projects (DAP, Unity C#
+    NeoVim plugin, LSP adjustments, etc).
+  used_technologies: Lua, NeoVim, LSP, DAP
+  thumbnail: assets/images/neovim-unity-showcase-thumbnail.jpg
+  thumbnail_hq_link: https://private-user-images.githubusercontent.com/89390465/480231285-daf91384-798c-4515-8b99-09bc49361b8c.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjE3NzI4NzQsIm5iZiI6MTc2MTc3MjU3NCwicGF0aCI6Ii84OTM5MDQ2NS80ODAyMzEyODUtZGFmOTEzODQtNzk4Yy00NTE1LThiOTktMDliYzQ5MzYxYjhjLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTEwMjklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMDI5VDIxMTYxNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTRjMGVmMWRkNzE1ZTQwOGFkMTU0MTE5NmYxMzc4MTA4ZTI4NGM3NzIxNTA2NzUxMDQ5MzhhNzY5MTBjYTBiNzImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.2jt-NRNAWWuzu0nzkhXEbw1XS8J6OJM2ffUcK3l2Ilg
   still_maintained: true
+
 - name: CVDS Converter
   repo: https://github.com/walcht/cvds
-  short_desc: Chunked Volumetric DataSet (CVDS) converter for out-of-core visualization of very large volumetric datasets
-  thumbnail: /assets/images/cvds.jpeg
+  short_desc: >
+    Chunked Volumetric DataSet (CVDS) converter for out-of-core visualization of very large volumetric datasets
+  detailed_desc: >
+    Convert input volumetric data in the form of images sequence (JPEG, PNG, TIFF, etc.) and DICOM data into a chunked
+    (i.e., subdivided into subregions), LZ4-compressed custom format. Volume rendering applications are expected to
+    consume these converted chunks in real-time usually using a visualization-driven technique (i.e., GPU decides which
+    chunks are needed for the current view parameters).
+  used_technologies: Python, OpenCV
   still_maintained: true
+
 - name: Unity TextureSubPlugin
   repo: https://github.com/walcht/TextureSubPlugin
-  short_desc: Unity low-level native plugin for uploading data to chunks of a 2D/3D Texture on the GPU
-  thumbnail: /assets/images/cvds.jpeg
+  short_desc: >
+    Unity low-level native plugin for uploading data to chunks of a 2D/3D Texture on the GPU and circumventing
+    Unity's 2D/3D Texture 2GBs limitation on certain platforms.
+  detailed_desc: >
+    If you want to upload a subregion to a 2D/3D Texture on Unity then you have to upload the whole texture
+    (i.e., upload the whole pixel array to the GPU). This is especially inefficient for GPU-driven applications (that is
+    where the GPU determines which data it needs for rendering). This plugin solves this issue by exposing the underlying
+    graphics API functions for uploading a subregion to a 2D/3D Texture. Developing this plugin caused me a significant
+    amount of headache especially since low-level Unity C++ side documentation is very poor.
+  used_technologies: C++, Vulkan, OpenGL, CMake
   still_maintained: true
+
 - name: Unity Neovim IDE
   repo: https://github.com/walcht/com.walcht.ide.neovim
   short_desc: Neovim integration with the Unity game engine. Inspired from similar package for VSCode
-  thumbnail: /assets/images/cvds.jpeg
+  detailed_desc: >
+    Plugin used to generate .csproj and .sln files for LSP purposes, dispatch a NeoVim server instance and bring it
+    to focus, and sync project files when the NeoVim server changes/creates some files.
+  used_technologies: C#, Unity3D, IP Sockets, Unity3D Editor
+  thumbnail: assets/images/unity-neovim-showcase-thumbnail.jpg
   still_maintained: true
+
 - name: Unity DAP
   repo: https://github.com/walcht/unity-dap
   short_desc: Unity Debug Adapter Implementation for the Mono Runtime
-  thumbnail: /assets/images/cvds.jpeg
+  detailed_desc: >
+    Hopefully when Unity finally moves to .NET Core, the need for this repository will cease to exist. In the meantime,
+    if you are doing Unity development on a text-editor/IDE other than VSCode, Ryder, or Visual Studio, and you want
+    debugging functionalities with a clear license (MIT) then this project is for you.
+  used_technologies: C#, DAP
+
   still_maintained: true
 - name: 3D Punching Bag Game
   repo: https://github.com/walcht/3D-punching-bag
   short_desc: A 3D punching bag, reaction-based and small game created in three.js
-  thumbnail: /assets/images/cvds.jpeg
+  detailed_desc: >
+    A reaction-speed-based, web-based punching bag game where the faster you hit the highlighted regions the higher the
+    score you get. At the end of each run, you will get a chart showcasing your hit speed (i.e., reaction time). In the
+    startup menu, you can change the difficulty setting.
+  used_technologies: TypeScript, Three.js, 3D Modeling, Chart.js
+  thumbnail: assets/images/3d-punching-bad-thumbnail.jpg
+  thumbnail_hq_link: https://private-user-images.githubusercontent.com/89390465/302101927-f41c13d4-1eac-4aff-84d1-3d284015db20.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjE3NzI4ODYsIm5iZiI6MTc2MTc3MjU4NiwicGF0aCI6Ii84OTM5MDQ2NS8zMDIxMDE5MjctZjQxYzEzZDQtMWVhYy00YWZmLTg0ZDEtM2QyODQwMTVkYjIwLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTEwMjklMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUxMDI5VDIxMTYyNlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTYyOTNjZTFhM2E4NzZjYjE1MzE1NmU0ZTA5NzQwMTczZDA0OTQ4MzkzNTM4MDEwZTQ1YTY3NTE2N2IzMjcxMWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.lqQSKqnFf0qf9JB-j--DE9sha_Qf1BHsESv-352oxwQ
   still_maintained: false
+
 - name: UnityD3
   repo: https://github.com/walcht/com.walcht.unityd3
   short_desc: A Unity plugin for authoring visualizations in d3.js-like style in the Unity game engine
-  thumbnail: /assets/images/cvds.jpeg
+  detailed_desc: >
+    Author 2D and 3D visualization using a similar workflow style to that of D3.js
+  used_technologies: C#, Unity3D, D3.js
   still_maintained: false
+
 - name: UK Car Accidents Dashboard
   repo: https://github.com/walcht/data-visualization
   short_desc: Visualization dashboard of a UK traffic accidents dataset using d3.js
-  thumbnail: /assets/images/cvds.jpeg
+  detailed_desc: >
+    A set of visualization components are implemented from scratch using D3.js including an interactive map of the UK
+    on top of which a layer of hexagons is rendered to display car accidents data. A player is included for animation
+    replay using timestamps. On the right, a calendar visualization is used to showcase the temporal distribution of the
+    accidents.
+  used_technologies: TypeScript, D3.js, SVG
+  thumbnail: assets/images/uk-accidents-dashboard-thumbnail.jpg
+  thumbnail_hq_link: https://github.com/walcht/data-visualization/blob/master/media/dashboard.PNG?raw=true
   still_maintained: false
   
 

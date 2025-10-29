@@ -34,6 +34,16 @@ header p { text-align: left;  margin: 0; }
 .no-ai-banner { position: absolute; width: 14%; max-width: 150px; right: 0; }
 
 /**
+ * 
+ */
+.thumbnail-container { display: flex; flex-direction: row; justify-content: space-between; }
+.thumbnail-container > div { display: flex; flex-direction: column; justify-content: flex-start; flex: 1; margin-left: 1%; }
+.thumbnail-container > .thumbnail { width: 35%; }
+.thumbnail-container > p { margin: 0; }
+.thumbnail-container > div > p { margin: 0; font-size: smaller; }
+li:not(:last-child) { margin-bottom: 10px;  }
+
+/**
  * Highlight/Markup
  */
 ::selection { background: var(--selection-background);  color: var(--selection-text); }
