@@ -1,5 +1,5 @@
 ---
-title: Set of C++ (and C) Compilation Notes and Code Snippets
+title: Set of C and C++ Compilation Notes and Code Snippets
 short_desc: A set of unorganized/random C++ (and C) compilation notes, code snippets, and gotchas
 layout: home
 show_edit_source: true
@@ -50,15 +50,12 @@ To check which version of glibc you have on your system:
 
 ## Compiling GCC From Source
 
-1. Got to any of the official [GCC mirrors][gcc_mirrors]
-1. Check the SHA256 sum by running:
+TODO: compiling this is taking hours - so when it finishes (assuming I don't
+just abort it and give up :-p), I will add details here.
 
-  ```bash
-  ```
-1. 
+## clang .vs gcc
 
-## clang Vs. gcc
-
+TODO: add clang .vs gcc comparision and when/why use one over the other.
 
 # C++ Compilation Notes and Code Snippets
 
