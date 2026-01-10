@@ -16,8 +16,7 @@ version.
 **In case you are an HR reading this then, please, read my resume in detail
 BEFORE sending me any job offers. Do not waste anyone's time by sending an
 "are you interested?" request after which you figure out that my set of skill
-don't actually match. That is unprofessional, disrespectful, and plain
-harmful.**
+do not actually match. That is simply unprofessional.**
 
 I am a software engineer specializing in the domain of computer graphics (i.e.,
 writing or dealing with programs/tools/APIs for the purpose of rendering) and
@@ -69,7 +68,8 @@ don't :-).**
 
 # Resume
 
-You can access my public resume [here][resume].
+You can access my public resume in English [here][resume] or in German
+[here][lebenslauf].
 
 In case you require a signed resume with additional details (e.g., nationality,
 date of birth, etc.), contact me and I will provide it.
@@ -288,7 +288,8 @@ and/or Football, consider adding me to your team :-D.
 Other than sports, whenever I have free time, I like to read technical books
 or improve my German language skills.
 
-[resume]: {{ "/public_cv.pdf" | absolute_url }}
+[resume]: {{ "/walid_chtioui_resume.pdf" | absolute_url }}
+[lebenslauf]: {{ "/walid_chtioui_lebenslauf.pdf" | absolute_url }}
 [linkedin]: https://linkedin.com/in/walid-chtioui
 [nds]: https://nds-association.org/
 [cariad]: https://cariad.technology/

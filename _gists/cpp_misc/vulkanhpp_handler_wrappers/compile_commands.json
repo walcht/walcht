@@ -1,0 +1,8 @@
+[
+  {
+    "directory": "build",
+    "command": "clang++-21 -g -std=gnu++20 -o main main.cpp",
+    "file": "main.cpp",
+    "output": "main"
+  }
+]
