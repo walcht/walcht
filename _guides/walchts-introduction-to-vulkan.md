@@ -2,6 +2,8 @@
 title: Walcht's Introduction to Vulkan Programming
 short_desc: An introduction to Vulkan graphics programming written by a Vulkan beginner
 layout: home
+show_edit_source: true
+add_no_ai_banner: true
 ---
 
 * Do not remove this line (it will not be displayed)
