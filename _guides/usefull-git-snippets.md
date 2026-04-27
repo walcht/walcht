@@ -130,3 +130,12 @@ Your fork is now in sync with the original repository and any potential PRs
 (obviously only PRs that are against the branch we synced - master) can be
 merged without conflicts (unless another PR gets merged again before yours in
 which case you have to redo all of this shit).
+
+## Stage Hunks
+
+You can ask git to interactively ask you whether to stage each hunk (continous
+succession of line changes) or not via:
+
+```bash
+git add -p <filename>
+```
