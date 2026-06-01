@@ -66,7 +66,8 @@ ulimit -c unlimited
 ```
 
 And to make this permanent (something I usually do NOT recommend to do - see
-not below), you have to change/add these entries in `/etc/security/limits.conf`: 
+notes below), you have to change/add these entries in
+`/etc/security/limits.conf`: 
 
 ```shell
 *               soft    core            unlimited
@@ -80,7 +81,38 @@ storage.**.
 
 ## Set/Change Core Dumps Location on Linux
 
-By default core dumps are written in the current working directory.
+By default core dumps are written in the current working directory **BUT** they
+are most likely not to be for most modern distros (e.g., Ubuntu pipes these
+core dumps to apport and usually stores them at `/var/lib/apport/coredump`).
+
+```shell
+cat /proc/sys/kernel/core_pattern
+```
+
+Which contains the following on my Ubuntu machine:
+
+```text
+|/usr/share/apport/apport -p%p -s%s -c%c -d%d -P%P -u%u -g%g -F%F -- %E
+```
+
+The `|` character means that the kernel will treat the rest of the pattern as a
+command to run rather than a file to write the dump into. The core dump will be
+supplied as stdin to this program: `/usr/share/apport/apport`.
+
+Now good luck figuring out where that giant pile of fuckery writes your core
+dumps (it's a Python script, you can somewhat easily figure out where the dumps
+will be created or you can just look at the most likely directories below).
+
+See:
+- https://askubuntu.com/questions/1349047/where-do-i-find-core-dump-files-and-how-do-i-view-and-analyze-the-backtrace-st
+- 
+
+Locations to look for for your core dumps:
+
+1. cwd (core dump is simply named `core`)
+1. `/var/lib/apport/coredump` on Ubuntu >= 21.10
+
+
 I usually put dumps (dumps in general, including core dumps) in `/var/dumps/`.
 This way I can use a cleanup script that automatically deletes dumps older than
 a custom defined date (say 3 days). To set/change core dumps location on your
@@ -119,7 +151,8 @@ g++ segfault.cpp -o segfault
 ```
 
 You should see `Segmentation fault (core dumped)` and you should find the dumped
-core at `/var/dumps/` (or whatever custom directory you have set).
+core at `/var/dumps/` (or whatever custom directory you have set. Or current
+directory if you haven't set any custom dump directory).
 
 In case you only see `Segmentation fault` then most probably something went
 wrong and the OS was not able (or allowed) to write the core dump.

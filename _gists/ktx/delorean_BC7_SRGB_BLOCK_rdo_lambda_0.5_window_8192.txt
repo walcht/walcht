@@ -1,0 +1,30 @@
+rdo-lambda: 0.5
+rdo-window-loopback-size: 8192
+rdo-auto-mse-scale: 1
+rdo-max-smooth-block-std-dev: 18.0
+rdo-ultrasmooth-blocks: 0
+rdo-max-rms-ratio: 10
+threadcount: 12
+bcn format: BC7_SRGB_BLOCK
+ktx encode runtime no-rdo (s): .056052729
+rdo lambda: 0.5
+rdo loopback window size: 8192
+rdo auto smooth block max MSE scale: 1
+rdo smooth block max MSE scale: 19.375
+rdo smooth block max std dev: 18
+rdo max allowed RMS increase ratio: 10
+rdo color weights: [1, 1, 1, 1] 
+rdo try two matches: 1
+rdo allow relative movement: 0
+rdo skip zero MSE blocks: 0
+total rdo time (s): 67.952
+total nbr modified blocks (%): 99.0137
+total nbr smooth blocks (%): 94.6692
+total second matches: 28799
+ktx encode + rdo runtime (s): 68.022034052
+ktx extract (rdo) runtime (s): .540725373
+image dims: 3000x1480
+bits/texel (ZLIB): 2.340
+bits/texel (ZSTD): 1.996
+bits/texel (ZLIB + RDO): 1.305
+bits/texel (ZSTD + RDO): 1.251
