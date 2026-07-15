@@ -134,8 +134,24 @@ which case you have to redo all of this shit).
 ## Stage Hunks
 
 You can ask git to interactively ask you whether to stage each hunk (continous
-succession of line changes) or not via:
+succession of line changes) via:
 
 ```bash
 git add -p <filename>
+```
+
+This is so useful to double check before submitting PRs.
+
+## Submobules
+
+Say you have a particular submodule and you are on branch *A* wich tracks a
+particular commits of a submodule *C*. Now you checkout
+branch *B* which **tracks a different submodule commit**. If you do the usual
+`git status` you will find that the submodule stated as `modified`. How to
+revert this so that branch *B* tracks its original submodule commit? This is
+how:
+
+```bash
+git submodule deinit -f .
+git submodule update --init
 ```
