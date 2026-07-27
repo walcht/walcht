@@ -1,0 +1,86 @@
+---
+title: Walcht's Guide to Understanding Color Spaces
+short_desc:  A brief introduction to underst color spaces, transfer functions, color primaries, and a bunch of other related stuff that you absolutely should understand if you intend to do any kind of computer graphics work.
+layout: home
+show_edit_source: true
+add_no_ai_banner: true
+---
+
+* Do not remove this line (it will not be displayed)
+{:toc}
+
+# Introduction
+
+While writing some code to add KTX2 support to OpenImageIO (industry-standard
+open-source software for manipulating images in a plethora of formats), I
+stumbled across many values a colorspace attribute can be set to but I only
+understood (not really, surface level understanding) only `srg_rec709_scene`
+(I didn't even understand what the `rec709` is and just assumed that this
+refers to sRGB). Looking at OpenImageIO's documentation of `Color information`
+didn't help either:
+
+```rst
+.. option:: "oiio:ColorSpace" : string
+
+    The name of the color space of the color channels. This can be the name of
+    any documented Color Interop Forum standard token, or any color space,
+    alias, or role known to OpenColorIO. Common values include:
+    
+    - `"lin_rec709_scene"`,  :  Color pixel values are known to be linear
+      scene-referred and using sRGB/Rec709 color primaries. Note that
+      `"lin_rec709"` is treated as a synonym.
+    - `"lin_ap1_scene"`, `"ACEScg"` :  ACEScg color space encoding.
+    - `"lin_ap0_scene"` :  ACES2065-1, the recommended ACES space for
+      interchange and archiving.
+    - `"srgb_rec709_scene"` : Using standard (piecewise) sRGB response and
+      primaries. The token `"sRGB"` is treated as a synonym.
+    - `"g22_rec709_scene"` : Rec709/sRGB primaries, but using a response curve
+      corresponding to gamma 2.2.
+
+    Additionally, `"scene_linear"` is a role that is appropriate for color
+    pixel values are known to be scene-linear and using facility-default color
+    primaries as defined by the OpenColorIO configuration.
+```
+
+I can't reasonably submit a PR to a major CG repository and expect to only
+support sRGB (potentially wrongly so).
+
+Off to Google we go! Let's search `color space`, or `understanding color spaces`,
+or `Rec709`, or `sRGB`.
+
+At this point I have to state the following fact: all (yes, all - except maybe
+Wikipedia but using that to understand a new concept is usually very rough.
+And dull. And boring) articles in at least first 3 pages of
+Google/DuckDuckGo/Bing (insert other garbage search engines here) are absolute
+garbage LLM slop that regenerate the same very high-level *explanation* points.
+
+Off to books/papers we go. A single search through Reddit (yes, it really is
+significantly much better that any search engine what so ever because of the
+community. Or at least what remained of it) and I find this goldgem of a paper:
+[Cinematic Color][cinematic-color].
+
+Throughout this guide, I will try to complement the paper with areas that I
+think are not explained enough to beginners. I am writing this as I read
+through it and try to understand it. This approach offers better understanding,
+I believe, of areas that were assumed to be already known by the author (nothing
+wrong with that, not every single book has to be written for absolute
+beginners).
+
+If you notice any errors/mistakes/typos, please see the bottom of the page the
+link to the Markdown file in the Github repository from which this site is
+generated. Any PRs are more than welcome :-)
+
+## Human Visual System
+
+Light is an electromagnetic spectrum and we (as in humans) are only able to
+*perceive* a portion of it; namely 380-780nm. Color is the way our brain
+reacts/encodes such information. It could have anything else (maybe perceive
+such wavelengths through sound?); doesn't matter. What matters is that color
+in reality doesn't exist and only exists through our perception of certain light
+wavelengths.
+
+Apparently, in 1931, some researchers tried to answer the following question:
+
+
+[cinematic-color]: https://raw.githubusercontent.com/jeremyselan/cinematiccolor/master/siggraph2012/cinematic_color.pdf
+[cie-1931]: https://en.wikipedia.org/wiki/CIE_1931_color_space

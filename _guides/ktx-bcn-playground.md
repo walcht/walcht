@@ -395,7 +395,7 @@ compression level (`--zstd 22` and `--zlib 9`).
 
    ```text
    + -------------------------------- + ----------------- + -------------- +
-   | parameter/stat                   |  no RDO           | RDO            |
+   | Parameter/Stat                   |  no RDO           | RDO            |
    | -------------------------------- | ----------------- | -------------- |
    | rdo-max-smooth-block-std-dev     | 18.0              | 18.0           |
    | rdo-max-rms-ratio                | 10                | 10             |
@@ -416,5 +416,43 @@ that do not contain noticeable amount of visible smooth blocks (don't just
 rely on the stats about smooth blocks since, as can be seen above, enabling
 ultra-smooth block handing for kodim01 results in no noticeable improvements
 while for kodim23 and delorean the improvements are very noticeable).
+
+## `--rdo-allow-relative-movement`
+
+If this is enabled, then encoding time is significantly increased at the benefit
+of better compression (i.e., lower bit rate).
+
+   <figure>
+     <div style="display: flex; flex-direction: row; gap: 5px;">
+      <img loading="lazy" src="{{"/assets/images/kodim23_lambda_1_0_window_8192_no_allow_relative_movement.png" | relative_url }}" alt="Kodim23 BC7 + RDO" />
+      <img loading="lazy" src="{{"/assets/images/kodim23_lambda_1_0_window_8192_allow_relative_movement.png" | relative_url }}" alt="Kodim23 BC7 + RDO + allow relative movement" />
+     </div>
+     <figcaption>
+     On the left: Kodim23 BC7 + RDO (allow relative movement is disabled + ultra-smooth blocks handling is disabled). Bit rates: 1.305 bits/texel (ZLIB + RDO) and 1.251 bits/texel (ZSTD + RDO)
+     Notice how the background gradient are very noticeably blocky. On the right: Delorean BC7 + RDO + ultra-smooth blocks handing.
+     Notice how the background gradient are noticeably less blocky. See stats below for the increased bit rate:
+     from 1.251 to 1.365 bits/texel (ZSTD + RDO).
+     </figcaption>
+   </figure>
+
+   With the following stats:
+
+   ```text
+   + -------------------------------- + ----------------- + -------------- +
+   | Parameter/Stat                   |  no rel. movement | rel. movement  |
+   | -------------------------------- | ----------------- | -------------- |
+   | rdo-max-smooth-block-std-dev     | 18.0              | 18.0           |
+   | rdo-max-rms-ratio                | 10                | 10             |
+   | rdo smooth block max MSE scale   | 19.375            | 19.375         |
+   | rdo try two matches              | 1                 | 1              |
+   | rdo allow relative movement      | 0                 | 0              |
+   | rdo skip zero MSE blocks         | 0                 | 0              |
+   | total nbr modified blocks (%)    | 99.0137           | 99.0364        |
+   | total second matches             | 28799             | 32996          |
+   | ktx encode + rdo runtime (s)     | 68.022034052      | 73.945519788   |
+   | bits/texel (ZLIB + RDO)          | 1.305             | 1.440          |
+   | bits/texel (ZSTD + RDO)          | 1.251             | 1.365          |
+   + -------------------------------- + ----------------- + -------------- +
+   ```
 
 [updated-bc7encrdo-with-improved-smooth]: https://richg42.blogspot.com/2021/02/updated-bc7encrdo-with-improved-smooth.html
