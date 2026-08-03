@@ -35,16 +35,26 @@ Very briefly, BCn compression compresses/encodes a 4-by-4 block of pixels
 into a fixed-size block; either 8 or 16 bytes. The *n* in BCn is used to denote
 the numbers from 1 to 7 with BC7 being the relatively more modern and better
 quality (usually) compression scheme for LDR textures (i.e., 8 bits per channel).
-BC7 encodes an RGBA 4-by-4 block of LDR pixels into 16 bytes. BC6HU/BC6HS are used to
-encode an RGB 4-by-4 block of HDR (i.e., 16 bits per channel) into 16 bytes.
-BC5 encodes RG 4-by-4 block of LDR pixels into 16 bytes. BC5 is mainly used for
+BC7 encodes an RGBA 4-by-4 block of LDR pixels into 16 bytes. BC6HU/BC6HS are
+used to encode an RGB 4-by-4 block of HDR (i.e., 16 bits per channel) into 16
+bytes.
+
+BC5 encodes RG 4-by-4 block of LDR pixels into 16 bytes and is mainly used for
 normal maps which contain vector (i.e., non-color) data and require particular
-handling (e.g., each channel is compressed separately). BC4 encodes an R 4-by-4
-block of LDR pixels into 8 bytes. BC1 encodes an RGB 4-by-4 block of LDR pixels
-into 8 bytes achieving significant VRAM usage reduction (and performance
-increase) but at much lower quality than BC7. BC2 and BC3 are essentially BC1
-with support for an alpha channel which is encoded separately into 8 bytes (so
-in total 16 bytes).
+handling (e.g., each channel is compressed separately).
+
+BC4 encodes an R 4-by-4 block of LDR pixels into 8 bytes and is mainly used
+for single-channel images (e.g., greyscale).
+
+BC1 encodes an RGB 4-by-4 block of LDR pixels into 8 bytes achieving significant
+VRAM usage reduction (and performance increase) but at much lower quality than
+BC7.
+
+BC2 and BC3 are essentially BC1 with support for an alpha channel which is
+encoded separately into 8 bytes (so in total 16 bytes). BC2 encodes the alpha
+channel sharply while BC3 employs a more adaptive technique. BC3 is almost
+always better than BC2 (only reason I said almost is that statements having only
+'always' are hard to prove).
 
 BCn hardware support is predominantly available on desktop GPUs and less so
 on mobile GPUs (on mobile, ASTC is the usual choice). DDS (GPU texture container
@@ -86,14 +96,15 @@ The following images were generated as such:
 ```bash
 #! /bin/bash
 pushd assets/images/
-oiiotool kodim23.png --cut 50,120,300,370 -o kodim23_original.png
+oiiotool Kodim23.png --cut 50,120,300,370 -o kodim23_original.png
 original_size_kb=$(( $(wc --bytes < kodim23_original.png) / 1024 ))
 echo "original size (KB): ${original_size_kb}"
 for quality in fastest faster fast medium thorough exhaustive
 do
     img_name=kodim23_bc7_${quality}
-    psnr=$(ktx create --format BC7_SRGB_BLOCK kodim23_original.png --compare-psnr --bc7-quality $quality \
-      --zstd 22 ${img_name}.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
+    psnr=$(ktx create --format BC7_SRGB_BLOCK kodim23_original.png \
+      --compare-psnr --bc7-quality $quality --zstd 22 ${img_name}.ktx2 \
+      | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
     size_kb=$(( $(wc --bytes < ${img_name}.ktx2) / 1024 ))
     echo "bc7 ${quality} size (KB): ${size_kb}"
     echo "bc7 ${quality} PNSR (dB): ${psnr}"
@@ -111,14 +122,14 @@ popd
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_fastest.png" | relative_url }}" alt="" />
     </div>
 <figcaption>
-On the left: kodim23 original (uncompressed ). On the right `fastest` BC7 encoding
-quality.
-Notice the blockiness around the beacon (depending on
-your display, you may not notice any difference at all. I Initially noticed
-very noticeable blockiness in my high-end monitor and now that I am on an
-LCD laptop I just don't see a difference).
+<b>On the left: Kodim23 original (uncompressed)</b>.
+<b>On the right `fastest` BC7 encoding quality</b>.
+Notice the blockiness around the beacon (depending on your display, you may not
+notice any difference at all. I Initially noticed very noticeable blockiness in
+my high-end monitor and now that I am on an LCD laptop I just don't see a
+difference).
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -130,10 +141,11 @@ Picture taken by Steve Kelly and is available in the public domain
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_faster.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 original (uncompressed). On the right: `faster` BC7 encoding
-  quality. Notice blockiness around beacon.
+  <b>On the left: Kodim23 original (uncompressed)</b>.
+  <b>On the right: `faster` BC7 encoding quality</b>.
+  Notice blockiness around beacon.
   Picture taken by Steve Kelly and is available in the public domain
-  <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+  <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
   </figcaption>
 </figure>
 
@@ -145,10 +157,10 @@ Picture taken by Steve Kelly and is available in the public domain
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_fast.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 original (uncompressed). On the right: `fast` BC7 encoding
+  On the left: Kodim23 original (uncompressed). On the right: `fast` BC7 encoding
   quality.
   Picture taken by Steve Kelly and is available in the public domain
-  <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+  <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
   </figcaption>
 </figure>
 
@@ -160,10 +172,10 @@ Picture taken by Steve Kelly and is available in the public domain
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_medium.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 original (uncompressed). On the right: `medium` BC7 encoding
+  On the left: Kodim23 original (uncompressed). On the right: `medium` BC7 encoding
   quality.
   Picture taken by Steve Kelly and is available in the public domain
-  <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+  <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
   </figcaption>
 </figure>
 
@@ -175,10 +187,10 @@ Picture taken by Steve Kelly and is available in the public domain
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_thorough.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 original (uncompressed). On the right: `thorough` BC7 encoding
+  On the left: Kodim23 original (uncompressed). On the right: `thorough` BC7 encoding
   quality.
   Picture taken by Steve Kelly and is available in the public domain
-  <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+  <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
   </figcaption>
 </figure>
 
@@ -190,10 +202,10 @@ Picture taken by Steve Kelly and is available in the public domain
     <img loading="lazy" src="{{"/assets/images/kodim23_bc7_exhaustive.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 original (uncompressed). On the right: `exhaustive` BC7 encoding
+  On the left: Kodim23 original (uncompressed). On the right: `exhaustive` BC7 encoding
   quality.
   Picture taken by Steve Kelly and is available in the public domain
-  <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+  <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
   </figcaption>
 </figure>
 
@@ -241,14 +253,15 @@ The following images were generated as such:
 ```bash
 #! /bin/bash
 pushd assets/images/
-oiiotool kodim23.png --cut 50,120,300,370 -o kodim23_original.png
+oiiotool Kodim23.png --cut 50,120,300,370 -o kodim23_original.png
 original_size_kb=$(( $(wc --bytes < kodim23_original.png) / 1024 ))
 echo "original size (KB): ${original_size_kb}"
 for quality in fastest faster fast medium thorough exhaustive
 do
     img_name=kodim23_bc1_${quality}
-    psnr=$(ktx create --format BC1_RGB_SRGB_BLOCK kodim23_original.png --compare-psnr --bc1-quality $quality \
-      --zstd 22 ${img_name}.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
+    psnr=$(ktx create --format BC1_RGB_SRGB_BLOCK kodim23_original.png \
+      --compare-psnr --bc1-quality $quality --zstd 22 ${img_name}.ktx2 \
+      | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
     size_kb=$(( $(wc --bytes < ${img_name}.ktx2) / 1024 ))
     echo "bc1 ${quality} size (KB): ${size_kb}"
     echo "bc1 ${quality} PNSR (dB): ${psnr}"
@@ -266,9 +279,9 @@ popd
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_fastest.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `fastest` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `fastest` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -280,9 +293,9 @@ Picture taken by Steve Kelly and is available in the public domain
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_faster.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `faster` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `faster` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -294,9 +307,9 @@ Picture taken by Steve Kelly and is available in the public domain
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_fast.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `fast` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `fast` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -308,9 +321,9 @@ Picture taken by Steve Kelly and is available in the public domain
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_medium.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `medium` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `medium` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -322,9 +335,9 @@ Picture taken by Steve Kelly and is available in the public domain
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_thorough.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `thorough` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `thorough` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -336,9 +349,9 @@ Picture taken by Steve Kelly and is available in the public domain
   <img loading="lazy" src="{{"/assets/images/kodim23_bc1_exhaustive.png" | relative_url }}" alt="" />
   </div>
 <figcaption>
-On the left: kodim23 original (uncompressed). On the right: `exhaustive` BC1 encoding quality.
+On the left: Kodim23 original (uncompressed). On the right: `exhaustive` BC1 encoding quality.
 Picture taken by Steve Kelly and is available in the public domain
-<a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+<a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
 </figcaption>
 </figure>
 
@@ -400,81 +413,98 @@ From the `ktx create --help` output:
 > lower bit rate for Deflate-based compressors (i.e., number of bits per encoded
 > texel).
 
-For kodim23 (sRGB), if we apply RDO with lambda 0.5 and window size of 8192
+For Kodim23 (sRGB), if we apply RDO with lambda 0.5 and window size of 8192
 (more on these parameters below):
 
    ```bash
    #! /bin/bash
    pushd assets/images
-   ktx create --format BC7_SRGB_BLOCK kodim01.png --compare-psnr kodim23.ktx2
-   echo "BC7: $(ls -lh kodim23.ktx2)"
-   ktx deflate --zstd 22 kodim23.ktx2 kodim23.ktx2
-   echo "BC7 (ZSTD): $(ls -lh kodim23.ktx2)"
-   rm kodim23.ktx2
-   ktx create --format BC7_SRGB_BLOCK kodim23.png --compare-psnr --bcn-rdo --bcn-rdo-l 0.5 --bcn-rdo-d 8192 --zstd 22 \
-     kodim23_bc7_rdo_lambda_0_5_window_8192.ktx2
-   echo "BC7 (RDO + ZSTD): $(ls -lh kodim23_bc7_rdo_lambda_0_5_window_8192.ktx2)"
-   ktx extract kodim23_bc7_rdo_lambda_0_5_window_8192.ktx2 kodim23_bc7_rdo_lambda_0_5_window_8192.png
-   rm kodim23_bc7_rdo_lambda_0_5_window_8192.ktx2
+   oiiotool Kodim23.png --cut 326,33,692,328 -o kodim23_cropped.png
+   psnr=$(ktx create --format BC7_SRGB_BLOCK kodim23_cropped.png \
+     --compare-psnr Kodim23.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p" )
+   size_kb=$(( $(wc --bytes < Kodim23.ktx2) / 1024 ))
+   echo "bc7 (no RDO): ${size_kb}KB PSNR=${psnr}dB"
+   ktx deflate --zstd 22 Kodim23.ktx2 Kodim23.ktx2
+   size_kb=$(( $(wc --bytes < Kodim23.ktx2) / 1024 ))
+   echo "bc7 (no RDO + ZSTD): ${size_kb}KB PSNR=${psnr}dB"
+   psnr=$(ktx create --format BC7_SRGB_BLOCK kodim23_cropped.png \
+     --compare-psnr --bcn-rdo --bcn-rdo-l 0.5 --bcn-rdo-d 8192 --zstd 22 \
+     Kodim23.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p" )
+   size_kb=$(( $(wc --bytes < Kodim23.ktx2) / 1024 ))
+   echo "bc7 (RDO + ZSTD): ${size_kb}KB PSNR=${psnr}dB"
+   ktx extract Kodim23.ktx2 kodim23_bc7_rdo_lambda_0_5_window_8192.png
+   rm Kodim23.ktx2
    popd
    ```
 
   <figure>
     <div style="display: flex; flex-direction: row; gap: 5px;">
-      <img loading="lazy" src="{{"/assets/images/kodim23.png" | relative_url }}" alt="" />
+      <img loading="lazy" src="{{"/assets/images/kodim23_cropped.png" | relative_url }}" alt="" />
       <img loading="lazy" src="{{"/assets/images/kodim23_bc7_rdo_lambda_0_5_window_8192.png" | relative_url }}" alt="" />
     </div>
     <figcaption>
-    On the left: original Kodim23 picture (768 x 512). On the right: BC7-compressed Kodim23 with RDO (PSNR: 41.794037 dB)
-    post-processing step with 0.5 lambda, a window size of 8192, and ZStandard (--zstd 22) applied as another layer of compression (supercompression).
-    Picture taken by Steve Kelly and is available in the public domain <a href="https://r0k.us/graphics/kodak/kodim23.html">here</a>.
+    On the left: original Kodim23 picture cropped.
+    On the right: BC7-compressed Kodim23 with RDO
+    post-processing step with 0.5 lambda, a window size of 8192, and ZStandard
+    (--zstd 22) applied as another layer of compression (supercompression).
+    Picture taken by Steve Kelly and is available in the public domain
+    <a href="https://r0k.us/graphics/kodak/Kodim23.html">here</a>.
     </figcaption>
   </figure>
 
   ```text
-  kodim23 BC7 compressed KTX2 size:               385KB   PSNR: 45.274887 dB
-  kodim23 BC7 compressed KTX2 size (ZSTD):        342KB   PSNR: 45.274887 dB
-  kodim23 BC7 compressed KTX2 size (RDO + ZSTD):  206KB   PSNR: 41.794037 dB
+  Kodim23 BC7 compressed KTX2 size:               106KB  PSNR: 47.640011 dB
+  Kodim23 BC7 compressed KTX2 size (ZSTD):        97KB   PSNR: 47.640011 dB
+  Kodim23 BC7 compressed KTX2 size (RDO + ZSTD):  64KB   PSNR: 41.847527 dB
   ```
 
   BC7 RDO + ZSTD achieved a reduction of ~40% relative to non-RDO, non-ZSTD,
   BC7-compressed KTX2 file.
 
-For Kodim01 (although it technically contains almost the same ratio of smooth
-blocks, they are significantly less noticeable than the ones in Kodim23):
+For Kodim01, although it technically contains almost the same ratio of smooth
+blocks, they are significantly less noticeable than the ones in Kodim23 which
+means we have more leeway in lambda and smooth block handling parameters:
 
    ```bash
    #! /bin/bash
    pushd assets/images
-   ktx create --format BC7_SRGB_BLOCK kodim01.png --compare-psnr kodim01.ktx2
-   echo "BC7: $(ls -lh kodim01.ktx2)"
+   oiiotool kodim01.png --cut 0,0,400,328 -o kodim01_cropped.png
+   psnr=$(ktx create --format BC7_SRGB_BLOCK kodim01_cropped.png \
+     --compare-psnr kodim01.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p" )
+   size_kb=$(( $(wc --bytes < kodim01.ktx2) / 1024 ))
+   echo "bc7 (no RDO): ${size_kb}KB PSNR=${psnr}dB"
    ktx deflate --zstd 22 kodim01.ktx2 kodim01.ktx2
-   echo "BC7 (ZSTD): $(ls -lh kodim01.ktx2)"
+   size_kb=$(( $(wc --bytes < kodim01.ktx2) / 1024 ))
+   echo "bc7 (no RDO + ZSTD): ${size_kb}KB PSNR=${psnr}dB"
+   psnr=$(ktx create --format BC7_SRGB_BLOCK kodim01_cropped.png \
+     --compare-psnr --bcn-rdo --bcn-rdo-l 1.0 --bcn-rdo-d 8192 --zstd 22 \
+     kodim01.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p" )
+   size_kb=$(( $(wc --bytes < kodim01.ktx2) / 1024 ))
+   echo "bc7 (RDO + ZSTD): ${size_kb}KB PSNR=${psnr}dB"
+   ktx extract kodim01.ktx2 kodim01_bc7_rdo_lambda_1_0_window_8192.png
    rm kodim01.ktx2
-   ktx create --format BC7_SRGB_BLOCK kodim01.png --compare-psnr --bcn-rdo --bcn-rdo-l 1.0 --bcn-rdo-d 8192 --zstd 22 \
-     kodim01_bc7_rdo_lambda_1_0_window_8192.ktx2
-   echo "BC7 (RDO + ZSTD): $(ls -lh kodim01_bc7_rdo_lambda_1_0_window_8192.ktx2)"
-   ktx extract kodim01_bc7_rdo_lambda_1_0_window_8192.ktx2 kodim01_bc7_rdo_lambda_1_0_window_8192.png
-   rm kodim01_bc7_rdo_lambda_1_0_window_8192.ktx2
    popd
    ```
 
   <figure>
     <div style="display: flex; flex-direction: row; gap: 5px;">
-      <img loading="lazy" src="{{"/assets/images/kodim01.png" | relative_url }}" alt="original kodim01" />
+      <img loading="lazy" src="{{"/assets/images/kodim01_cropped.png" | relative_url }}" alt="original kodim01" />
       <img loading="lazy" src="{{"/assets/images/kodim01_bc7_rdo_lambda_1_0_window_8192.png" | relative_url }}" alt="kodim01 with RDO" />
     </div>
     <figcaption>
-    On the left: original Kodim01 image (768 x 512). On the right: BC7-compressed Kodim01 with RDO
-    post-processing step with 1.0 lambda, a window size of 8192, and ZStandard (--zstd 22) supercompression applied on top.
-    Picture taken by Don Cochran and is available in the public domain <a href="https://r0k.us/graphics/kodak/kodim01.html">here</a>.
+    On the left: original Kodim01 image cropped.
+    On the right: BC7-compressed Kodim01 with RDO
+    post-processing step with 1.0 lambda, a window size of 8192, and ZStandard
+    (--zstd 22) supercompression applied on top. Picture taken by Don Cochran
+    and is available in the public domain
+    <a href="https://r0k.us/graphics/kodak/kodim01.html">here</a>.
     </figcaption>
   </figure>
  
   ```text
-  kodim01 BC7 compressed KTX2 size:               385KB   PSNR: 45.274887 dB
-  kodim01 BC7 compressed KTX2 size (ZSTD):        342KB   PSNR: 45.274887 dB
-  kodim01 BC7 compressed KTX2 size (RDO + ZSTD):  177KB   PSNR: 33.719276 dB
+  kodim01 BC7 compressed KTX2 size:                131KB    PSNR: 45.251926 dB
+  kodim01 BC7 compressed KTX2 size (ZSTD):         117KB    PSNR: 45.251926 dB
+  kodim01 BC7 compressed KTX2 size (RDO + ZSTD):    62KB    PSNR: 33.551018 dB
   ```
 
 ### `--bcn-rdo-l <lambda>`
@@ -510,9 +540,6 @@ If you don't care about encoding speed, then set this to a high value (e.g.,
 8192). From limited testing, I found values > 8192 to take significantly much
 longer while offering very little bit rate improvements.
 
-TODO: at some point I might add a bit-rate vs. window-size + a window-size vs. time
-graphs.
-
 ### `--bcn-rdo-s <deviation>`
 
 This controls if and to which degree blocks are considered *smooth blocks*. RDO
@@ -531,14 +558,14 @@ So essentially: if the std dev. of a block exceeds this value, then it won't be
 considered as a smooth block (i.e., the smooth block MSE scale factor will be
 set to 1.0f for this block). The smaller the ratio of the standard deviation of
 this block to this value the more the smooth block
-MSE scale factor approaches `--rdo-max-smooth-block-mse-scale`. 
+MSE scale factor approaches [--bcn-rdo-b][#--bcn-rdo-b-scale].
 Range is \[.01,65536.0\]. Larger values expand the range of blocks 
 considered smooth and consequently hurt bit rate. Lower values may result in
 noticeable artifacts/distortion at the benefit of greater bit rate. Default is
 18.0.
 
 This is what you get without smooth block handling (i.e., setting this parameter
-as low as possible):'/home/walcht/KTX-Software/kodim01_rdo.png' 
+as low as possible):
 
 <figure>
   <div style="display: flex; flex-direction: row; gap: 5px;">
@@ -546,16 +573,17 @@ as low as possible):'/home/walcht/KTX-Software/kodim01_rdo.png'
    <img loading="lazy" src="{{"/assets/images/kodim23_bc7_std_dev_18.png" | relative_url }}" alt="" />
   </div>
   <figcaption>
-  On the left: kodim23 with `--rdo-max-smooth-block-std-dev` set to 10.0. On the
-  right kodim23 with `--rdo-max-smooth-block-std-dev` set to 18.0. Notice the
-  artifacts around the bottom of the bird's beacon in the left picture.
+  On the left: Kodim23 with `--bcn-rdo-s` set to 10.0.
+  On the right Kodim23 with `--bcn-rdo-s` set to 18.0. Notice the artifacts
+  around the bottom of the bird's beacon in the left picture.
   </figcaption>
 </figure>
 
 I usually just keep this at 18.0f and rarely play around with it unless I notice
 some artifacts around the edges as the ones seen above.
 
-For why scaling the MSE of smooth blocks is so crucial in RDO, see [--rdo-max-smooth-block-mse-scale][#--rdo-max-smooth-block-mse-scale]
+For why scaling the MSE of smooth blocks is so crucial in RDO, see
+[--bcn-rdo-b][#--bcn-rdo-b-scale]
 
 ### `--bcn-rdo-b <scale>`
 
@@ -608,7 +636,7 @@ compression:
    popd
    ```
 
-   <b>BC7 smooth blocks auto (29KB; PSNR: 34.205101dB dB) vs. BC7 smooth blocks disabled (17 KB; PSNR: 30.466373 dB)</b>:
+   <b>BC7 smooth blocks auto (29KB; PSNR: 34.205101 dB) vs. BC7 smooth blocks disabled (17 KB; PSNR: 30.466373 dB)</b>:
    
    <figure>
      <div style="display: flex; flex-direction: row; gap: 5px;">
@@ -625,7 +653,7 @@ compression:
      </figcaption>
    </figure>
    
-   <b>BC7 smooth blocks auto (29KB; PSNR: 34.205101dB dB) vs. BC7 smooth blocks MSE scale 30.0 (36 KB; PSNR: 34.991135 dB)</b>:
+   <b>BC7 smooth blocks auto (29KB; PSNR: 34.205101 dB) vs. BC7 smooth blocks MSE scale 30.0 (36 KB; PSNR: 34.991135 dB)</b>:
    
    <figure>
      <div style="display: flex; flex-direction: row; gap: 5px;">
@@ -690,19 +718,19 @@ the images below: a black pixel is an ultra-smooth block):
  - The following 3 filtering/spread out steps are performed (see figures below)
 
 To demonstrate the necessity of ultrasmooth block handling, Delorean render
-image is used due (following the original blog post since it has a significant
+image is used (following the original blog post since it has a significant
 portion of ultrasmooth blocks due to the background gradient):
 
 <figure>
   <img loading="lazy" src="{{"/assets/images/delorean.jpg" | relative_url }}" alt="" />
 <figcaption>
-  <b>Delorean original render image (3000 x 1480). Compressed using JPEG.</b>.
+  <b>Delorean original render image downscaled to (1500 x 740). Compressed using JPEG.</b>.
   Notice the very smooth background gradient and the very high number of smooth
   blocks.
 </figcaption>
 </figure>
 
-With the following smooth/ultrasmooth block stats:
+With the following smooth/ultrasmooth block stats (on the original, non-downscaled image):
 
 ```text
 total nbr smooth blocks (%): 94.6692
@@ -749,101 +777,91 @@ total nbr ultra smooth blocks (%): 69.8061
   </figcaption>
 </figure>
 
-The resulting artifcats you get after setting this (i.e., disabling ultra-smooth
+The resulting artifacts you get after setting this (i.e., disabling ultra-smooth
 blocks handling) are significantly noticeable for images containing gradients.
 For an example, let's pick the delorean.jpg image (JPEG because I couldn't find
-the original PNG :-/):
+the original lossless PNG :-/):
 
 Hereafter, whenever ZSTD or Zlib are mentioned, they are used with highest
 compression level (`--zstd 22` and `--zlib 9`).
 
-bc7 (ZSTD + RDO): 651KB PSNR=44.592930dB
-
-- Original (JPEG):
+The following images are generated using the following script:
 
    ```bash
    #! /bin/bash
    pushd assets/images
    psnr=$(ktx create --format BC7_SRGB_BLOCK delorean.jpg --compare-psnr delorean.ktx2 \
      | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
-   
-   ktx deflate --zlib 9 delorean.ktx2 delorean_zlib.ktx2
-   echo "bc7 (ZLIB): $(( $(wc --bytes < delorean_zlib.ktx2) / 1024 ))KB PSNR=${psnr}dB"
-   rm delorean_zlib.ktx2
-   
+   size_kb=$(( $(wc --bytes < delorean.ktx2) / 1024 ))
+   echo "bc7 (no RDO): ${size_kb}KB PSNR=${psnr}dB"
    ktx deflate --zstd 22 delorean.ktx2 delorean.ktx2
-   echo "bc7 (ZSTD): $(( $(wc --bytes < delorean.ktx2) / 1024 ))KB PSNR=${psnr}dB"
+   size_kb=$(( $(wc --bytes < delorean.ktx2) / 1024 ))
+   echo "bc7 (no RDO + ZSTD): ${size_kb}KB PSNR=${psnr}dB"
    ktx extract delorean.ktx2 delorean_bc7.png
    
    psnr=$(ktx create --format BC7_SRGB_BLOCK delorean.jpg --bcn-rdo --bcn-rdo-l 0.5 --bcn-rdo-d 8192 \
      --compare-psnr --zstd 22 delorean.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
-   echo "bc7 (ZSTD + RDO): $(( $(wc --bytes < delorean.ktx2) / 1024 ))KB PSNR=${psnr}dB"
+   size_kb=$(( $(wc --bytes < delorean.ktx2) / 1024 ))
+   echo "bc7 (RDO ZSTD): ${size_kb}KB PSNR=${psnr}dB"
+   ktx extract delorean.ktx2 delorean_BC7_SRGB_BLOCK_rdo_lambda_0_5_window_8192.png
    
-   ktx extract delorean.ktx2 delorean_bc7_rdo_l_0_5_d_8192.png
+   psnr=$(ktx create --format BC7_SRGB_BLOCK delorean.jpg --bcn-rdo --bcn-rdo-l 0.5 --bcn-rdo-d 8192 \
+     --bcn-rdo-no-ultrasmooth --compare-psnr --zstd 22 delorean.ktx2 | sed -nE "s/\s*PSNR\s*Max:\s*([.0-9]+)/\1/p")
+   size_kb=$(( $(wc --bytes < delorean.ktx2) / 1024 ))
+   echo "bc7 (RDO + ZSTD + no-ultrasmooth): ${size_kb}KB PSNR=${psnr}dB"
+   ktx extract delorean.ktx2 delorean_BC7_SRGB_BLOCK_rdo_lambda_0_5_window_8192_no_ultrasmooth.png
+   
    rm delorean.ktx2
    popd
    ```
 
-- **Original Delorean (JPEG) vs. BC7 (no RDO) **:
-
-   Encoding to BC7 (all default) without RDO with ZSTD vs. ZLib:
-
-   ```text
-   size (ZLIB): 1267 KB
-   size (ZSTD): 1080 KB
-   PSNR:        51.846298 dB
-   ```
+- <b>Original Delorean downscaled (JPEG) vs. BC7 (no RDO)</b>:
 
    <figure>
+     <div style="display: flex; flex-direction: row; gap: 5px;">
      <img loading="lazy" src="{{"/assets/images/delorean.jpg" | relative_url }}" alt="" />
      <img loading="lazy" src="{{"/assets/images/delorean_bc7.png" | relative_url }}" alt="" />
+     </div>
    <figcaption>
-   <b>Left: Delorean original JPEG image (3000 x 1480)</b>.
+   <b>Left: Delorean original JPEG image downscaled to (1500 x  740)</b>.
    <b>Right: encoded using BC7 (no RDO and all parameters are defaults)</b>.
    Notice the very smooth background gradient.
    </figcaption>
    </figure>
 
-- **BC7 + RDO + lambda 0.5 + 8192 window size (ultra-smooth blocks handling disabled vs. enabled)**:
+   ```text
+   Delorean BC7 KTX2 size:                                1084KB  PSNR: 50.329319 dB
+   Delorean BC7 KTX2 size (ZSTD):                          379KB  PSNR: 50.329319 dB
+   Delorean BC7 KTX2 size (RDO + ZSTD):                    181KB  PSNR: 43.144417 dB
+   ```
+
+- <b>BC7 + RDO + lambda 0.5 + 8192 window size (ultra-smooth blocks handling disabled vs. enabled)</b>:
 
    <figure>
      <div style="display: flex; flex-direction: row; gap: 5px;">
-      <img loading="lazy" src="{{"/assets/images/delorean_BC7_SRGB_BLOCK_rdo_lambda_0.5_window_8192.png" | relative_url }}" alt="Delorean BC7 + RDO" />
-      <img loading="lazy" src="{{"/assets/images/delorean_BC7_SRGB_BLOCK_rdo_lambda_0.5_window_8192_no_ultrasmooth.png" | relative_url }}" alt="Delorean BC7 + RDO + ultra-smooth blocks handing" />
+      <img loading="lazy" src="{{"/assets/images/delorean_BC7_SRGB_BLOCK_rdo_lambda_0_5_window_8192.png" | relative_url }}" alt="" />
+      <img loading="lazy" src="{{"/assets/images/delorean_BC7_SRGB_BLOCK_rdo_lambda_0_5_window_8192_no_ultrasmooth.png" | relative_url }}" alt="" />
      </div>
      <figcaption>
-     On the left: Delorean BC7 + RDO. Bit rates: 1.305 bits/texel (ZLIB + RDO) and 1.251 bits/texel (ZSTD + RDO)
-     Notice how the background gradient are very noticeably blocky. On the right: Delorean BC7 + RDO + ultra-smooth blocks handing.
-     Notice how the background gradient are noticeably less blocky. See stats below for the increased bit rate:
-     from 1.251 to 1.365 bits/texel (ZSTD + RDO).
+     On the left: Delorean BC7 + RDO <b>with ultrasmooth block handling</b>.
+     On the right: Delorean BC7 + RDO <b>without ultrasmooth block handing</b>.
+     For the left image, notice how the background gradient are noticeably less
+     blocky relative to the image with no ultrasmooth block handling (right)
+     where background gradient is very noticeably blocky.
      </figcaption>
    </figure>
 
-   With the following stats:
-
    ```text
-   + -------------------------------- + ----------------- + -------------- +
-   | Parameter/Stat                   |  no RDO           | RDO            |
-   | -------------------------------- | ----------------- | -------------- |
-   | rdo-max-smooth-block-std-dev     | 18.0              | 18.0           |
-   | rdo-max-rms-ratio                | 10                | 10             |
-   | rdo smooth block max MSE scale   | 19.375            | 19.375         |
-   | rdo try two matches              | 1                 | 1              |
-   | rdo allow relative movement      | 0                 | 0              |
-   | rdo skip zero MSE blocks         | 0                 | 0              |
-   | total nbr modified blocks (%)    | 99.0137           | 99.0364        |
-   | total second matches             | 28799             | 32996          |
-   | ktx encode + rdo runtime (s)     | 68.022034052      | 73.945519788   |
-   | bits/texel (ZLIB + RDO)          | 1.305             | 1.440          |
-   | bits/texel (ZSTD + RDO)          | 1.251             | 1.365          |
-   + -------------------------------- + ----------------- + -------------- +
+   Delorean BC7 KTX2 size (RDO + ZSTD):                    181KB  PSNR: 43.144417 dB
+   Delorean BC7 KTX2 size (RDO + ZSTD + no-ultrasmooth):   163KB  PSNR: 42.227688 dB
    ```
 
-You probably want to disable ultra-smooth block handling for images/textures
-that do not contain noticeable amount of visible smooth blocks (don't just
-rely on the stats about smooth blocks since, as can be seen above, enabling
-ultra-smooth block handing for Kodim01 results in no noticeable improvements
-while for Kodim23 and Delorean the improvements are very noticeable).
+As can be seen above, the 20 or so KB saved by disabling ultrasmooth block
+handling is definitely not worth it. This is why it is enabled by default.
+You may want to try to to disable ultra-smooth block handling for
+images/textures that do not contain noticeable amount of visible smooth blocks
+(but just relying on the stats about smooth/ultrasmooth blocks is probably
+insufficient).
 
 ### `--bcn-rdo-try-one-match`
 
@@ -876,7 +894,7 @@ and create the illusion of more detail without having to add any vertices.
 BC5 is, usually, the go-to BCn format to compress normal maps. According to
 oiiotool, the normal map in the following example was saved in sRGB colorspace
 which is not at all what you should do for non-color data (or any data that is
-NOT intended to be displayed).
+NOT intended to be displayed) but it the sample that I came across the first.
 
 The script that is used to compress the normal map to BC5 is as follows:
 
@@ -911,6 +929,13 @@ Notice how ZStandard supercompression is applied on top of BC5 compression.
 </figure>
 
 Notes:
+
+1. You usually don't want to apply RDO to non-color data because RDO assumes
+color input. In the example above with normal maps, I just wanted to show that
+it is possible to do so and end up with *acceptable* results (if you provide
+`--normal-map` flag then an error will be produced when `--bcn-rdo` is also
+set). But, again, more likely than not you will get very noticeable artifacts
+especially when actually testing in the target environment.
 
 1. The problem with normal map artifacts is that they can appear significantly
 worse depending on the set-up lighting and Shaders. So do proper testing in a
