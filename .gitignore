@@ -84,3 +84,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+*.ktx2
+*.ktx
