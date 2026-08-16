@@ -10,13 +10,7 @@ add_no_ai_banner: true
 
 # About
 
-In a hurry? Consider reading the more compact, public [CV][resume]
-version.
-
-**In case you are an HR reading this then, please, read my resume in detail
-BEFORE sending me any job offers. Do not waste anyone's time by sending an
-"are you interested?" request after which you figure out that my set of skill
-do not actually match. That is simply unprofessional.**
+In a hurry? Consider reading the more compact, public [CV][resume] version.
 
 I am a software engineer specializing in the domain of computer graphics (i.e.,
 writing or dealing with programs/tools/APIs for the purpose of rendering) and
