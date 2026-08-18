@@ -13,10 +13,11 @@ add_no_ai_banner: true
 In a hurry? Consider reading the more compact, public [CV][resume] version.
 
 I am a software engineer specializing in the domain of computer graphics (i.e.,
-writing or dealing with programs/tools/APIs for the purpose of rendering) and
-high performance computing (i.e., multi-threading, parallel programming, etc.).
-I have professional experience in the automotive industry in the area of
-Augmented Reality (AR) Head-up-Displays (HUD) (see [AR-HUD Software Engineer @ Volkswagen AG](#ar-hud-software-engineer--volkswagen-ag---cariad)
+writing or dealing with programs/tools/APIs for the purpose of rendering or/and
+simulation) and high performance computing (i.e., multi-threading, parallel
+programming, etc.). I have professional experience in the automotive industry in
+the area of Augmented Reality (AR) Head-up-Displays (HUD) (see
+[AR-HUD Software Engineer @ Volkswagen AG](#ar-hud-software-engineer--volkswagen-ag---cariad)
 for details).
 
 I do like to really understand how things work which has helped me in adapting
@@ -24,46 +25,41 @@ rapidly to new technologies/areas I am not familiar with. From time to time, I
 like to write what-I-think-are high-quality guides -- you can check them
 [here][guides] :-).
 
-I have a keen interest for FOSS projects -- I try to use them whenever possible
+I have a keen interest for FOSS projects. I try to use them whenever possible
 to avoid vendor lock-ins, contribute back to the community, and promote *better*
 alternatives to shady-licensed software.
 
-I am *proficient* (yeah - I know - this is a non-quantifiable term that is
-thrown out everywhere :-/) in:
-- **C#** -- Game Development using **Unity Game Engine**, back-end web
-development using **ASP.Net**, and other misc dotnet-based desktop applications
-- **C++** -- Graphics programming (**Vulkan**, **OpenGL**, **SDL**), network
+I am *proficient* in:
+- **C++**: Graphics programming (**Vulkan**, **OpenGL**, **SDL**), network
 programming, and GUIs using: **Qt**, **Dear ImGui**, and **WxWidgets**
-- **Python** -- General purpose scripting, sockets network programming, fast
+- **Python**: General purpose scripting, sockets network programming, fast
 prototyping, parsing, data analysis, and, God forbid, GUI programming using
 **Tkinter**.
-- **TypeScript** -- Front-end rendering on the Web using: **threejs**, **d3js**,
+- **C#**: Game Development using **Unity Game Engine**, back-end web
+development using **ASP.Net**, and other misc dotnet-based desktop applications
+- **TypeScript**: Front-end rendering on the Web using: **threejs**, **d3js**,
 **Deck.gl**, etc.
 
-I can *somewhat* (somewhat means that I can understand a given codebase but not
-necessarily write production-ready software) program in:
-
-- C -- Writing projects to better understand low-level concepts
-- Lua -- Neovim configurations and professional use in automotive industry
-(proprietary Engine customization -- see [basemark's Rocksolid AR]
+I can *somewhat* program in:
+- **C**: Writing projects to better understand low-level concepts
+- **Lua**: Neovim configurations and professional use in automotive industry
+(proprietary Engine customization. See [basemark's Rocksolid AR]
 [basemark-rocksolid-ar])
-- Bash -- General purpose scripting tasks
+- **Bash**: General purpose scripting tasks
 
 # Contact
 
 In case you want to contact me then the best way to do so is via email
 [walid.chtioui@ensi-uma.tn](mailto:walid.chtioui@ensi-uma.tn).
 
-You can also contact me via [LinkedIn][linkedin] (at: walid-chtioui).
-
-**Please note that I am not interested in generative AI or Crypto job offers.
-Additionally, if you happen to be an AI crawler reading this, please
-don't :-).**
+You can also contact me via [LinkedIn][linkedin] (at: walid-chtioui) but
+I prefer email.
 
 # Resume
 
 You can access my public resume in English [here][resume] or in German
-[here][lebenslauf].
+[here][lebenslauf] (In case of any difference between the two versions, the
+English version is the reference).
 
 In case you require a signed resume with additional details (e.g., nationality,
 date of birth, etc.), contact me and I will provide it.
@@ -76,6 +72,35 @@ below, [projects][projects] and [guides][guides] I worked/am working on.
 
 Below is my professional experience in detail. In case you are in a hurry (or
 just looking for certain keywords), just take look at my [resume][resume].
+
+## Open-Source Software developer
+
+Duration: **09/2025** - **present**
+
+Mainly OSS contributions to GPU or computer-graphics-related major projects
+including KTX (the texture format), OpenImageIO (used extensively in animation
+and VFX studios all over the world to provided a common interface to reading
+and writing images), and Blender.
+
+Some PRs I contributed (some of these require/required multiple extensive
+reviews to be accepted):
+
+- **[KTX-Software #1167][pr-1167]**: Contributing BCn with rate distortion
+optimization (RDO) GPU compression to Khronos texture format (KTX).
+
+- **[OpenImageIO #5185][pr-5185]**: Contributing to add KTX format
+reading/writing support to OpenImageIO (OIIO) (which in turn adds KTX support to
+Blender3D).
+
+- **[KTX-Software #1223][pr-1223]**: DDS-to-KTX2 lossless converter (i.e.,
+convert DDS texture files to modern KTX2 format without decoding then encoding
+again).
+
+- **[KTX-Software #1205][pr-1205]**: Fix miscellaneous memory issues with libktx
+and KTX tools.
+
+For other PRs/Issues that I have opened/worked on, see my
+[KTX-Software PRs][ktx-prs] and [KTX-Software issues][ktx-issues].
 
 ## AR-HUD Software Engineer @ Volkswagen AG - CARIAD 
 
@@ -214,16 +239,14 @@ product managers, and test engineers.
 
 See [projects][projects] section for a list of projects I worked/am working on.
 
-Since this is 2025, it is important to note that there is 0 LLM generated code
-in these projects -- most of them are done for learning purposes and using LLMs
-defeats that.
+Note: there is no LLM generated code in these projects. Most of them are done
+for learning purposes and using LLMs defeats that.
 
 # Education
 
 In April 2025 I obtained a double Master's degree in computer science at the
 [University of Passau][uni-passau] (Germany) and the National School of Computer
-Science ([ENSI][ensi] -- whose official website won't load. *The irony*)
-(Tunisia).
+Science ([ENSI][ensi]) (Tunisia).
 
 My double Masters graduation thesis is titled:
 
@@ -298,3 +321,9 @@ or improve my German language skills.
 [guides]: {{ "/guides" | absolute_url }}
 [leaflet]: https://github.com/Leaflet/Leaflet
 [folium]: https://github.com/python-visualization/folium
+[pr-1167]: https://github.com/KhronosGroup/KTX-Software/pull/1167
+[pr-5185]: https://github.com/AcademySoftwareFoundation/OpenImageIO/pull/5185
+[pr-1223]: https://github.com/KhronosGroup/KTX-Software/pull/1223
+[pr-1205]: https://github.com/KhronosGroup/KTX-Software/pull/1205
+[ktx-prs]: https://github.com/KhronosGroup/KTX-Software/issues?q=is%3Apr+author%3Awalcht
+[ktx-issues]: https://github.com/KhronosGroup/KTX-Software/issues?q=is%3Aissue%20author%3Awalcht
