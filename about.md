@@ -86,7 +86,9 @@ Some PRs I contributed (some of these require/required multiple extensive
 reviews to be accepted):
 
 - **[KTX-Software #1167][pr-1167]**: Contributing BCn with rate distortion
-optimization (RDO) GPU compression to Khronos texture format (KTX).
+optimization (RDO) GPU compression to Khronos texture format (KTX). For details,
+read my written guide on generating BCn-compressed KTX2 textures
+[here][bcn-guide].
 
 - **[OpenImageIO #5185][pr-5185]**: Contributing to add KTX format
 reading/writing support to OpenImageIO (OIIO) (which in turn adds KTX support to
@@ -292,9 +294,9 @@ teaches :-/)
 
 # Spoken Languages
 
-- English -- C1 (fluent)
+- English -- C2 (fluent)
 - French -- C1 (fluent)
-- German -- B1 (beginner-intermediate)
+- German -- B1 (learning towards B2)
 - Arabic -- Native
 
 # Activities and Interests
@@ -327,3 +329,4 @@ or improve my German language skills.
 [pr-1205]: https://github.com/KhronosGroup/KTX-Software/pull/1205
 [ktx-prs]: https://github.com/KhronosGroup/KTX-Software/issues?q=is%3Apr+author%3Awalcht
 [ktx-issues]: https://github.com/KhronosGroup/KTX-Software/issues?q=is%3Aissue%20author%3Awalcht
+[bcn-guide]: {{ "guides/ktx-bcn-playground.md" | absolute_url }}
