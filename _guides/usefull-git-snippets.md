@@ -155,3 +155,16 @@ how:
 git submodule deinit -f .
 git submodule update --init
 ```
+
+## Git LFS Permission Denied on Windows
+
+GitHub LFS always uses HTTPS so your SSH key/agent stuff doesn't work for it.
+
+Just run this (Git on Windows is overall such a crappy experience; Git Bash is
+slow, buggy; e.g., UI windows don't close):
+
+```bash
+git config --local lfs.url https://github.com/walcht/KTX-Software.git/info/lfs
+git config --global credential.helper manager
+git lfs pull
+```
