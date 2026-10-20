@@ -156,6 +156,9 @@ git submodule deinit -f .
 git submodule update --init
 ```
 
+**Note: the `-f` after `deinit` means force the de-initialization; anything
+local changes to that submodule will be lost! Proceed with caution.**
+
 ## Git LFS Permission Denied on Windows
 
 GitHub LFS always uses HTTPS so your SSH key/agent stuff doesn't work for it.
@@ -168,3 +171,18 @@ git config --local lfs.url https://github.com/walcht/KTX-Software.git/info/lfs
 git config --global credential.helper manager
 git lfs pull
 ```
+
+Note: I used an explicit repo link because this always happens to me for that
+particular repo clone but you get the point on how to get the lfs URL from your
+GitHub repo (other providers should also be fairly simple to figure out).
+
+## Git Checkout Particular form Another Branch
+
+To copy files from a particular (remote) branch to your current branch:
+
+```bash
+git checkout <remote>/<branch-name-to-copy-files-from> path/to/files
+```
+
+Note: the `<remote>/` can be omitted but then you will copy files from your
+local branch and it may be out-of-date with regards to its remote branch.
